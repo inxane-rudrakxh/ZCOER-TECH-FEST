@@ -697,9 +697,19 @@ const Admin = () => {
       {/* QR Code Modal */}
       {qrToken && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4">
-          <div className="bg-surface-container p-8 rounded-2xl shadow-2xl border-[4px] border-on-surface max-w-sm w-full flex flex-col items-center">
-            <h2 className="font-headline-lg text-2xl uppercase mb-6 text-center text-on-surface">Scan to Register</h2>
-            <div className="bg-white p-4 rounded-xl border-[3px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] mb-6">
+          <div className="bg-surface-container p-8 rounded-2xl shadow-2xl border-[4px] border-on-surface max-w-sm w-full flex flex-col items-center relative overflow-hidden">
+            {/* Background Doodles */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none select-none">
+              <span className="absolute top-6 left-6 text-3xl -rotate-12 animate-pulse">🚀</span>
+              <span className="absolute bottom-12 right-6 text-4xl rotate-12">👾</span>
+              <span className="absolute top-12 right-8 text-2xl rotate-45">⚡</span>
+              <span className="absolute bottom-6 left-10 text-3xl -rotate-6">💻</span>
+              <span className="absolute top-1/2 left-4 text-2xl rotate-90 opacity-50">🕹️</span>
+              <span className="absolute top-1/2 right-4 text-2xl -rotate-45 opacity-50">✨</span>
+            </div>
+            
+            <h2 className="font-headline-lg text-2xl uppercase mb-6 text-center text-on-surface relative z-10">Scan to Register</h2>
+            <div className="bg-white p-4 rounded-xl border-[3px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] mb-6 relative z-10">
               <QRCodeSVG 
                 value={`${window.location.origin}/register/${qrToken}`} 
                 size={220} 
@@ -707,15 +717,36 @@ const Admin = () => {
                 includeMargin={false}
               />
             </div>
-            <div className="font-label-code text-secondary text-sm mb-6 text-center break-all">
+            <div className="font-label-code text-secondary text-sm mb-6 text-center break-all relative z-10 bg-surface-container-lowest p-2 rounded border border-on-surface/20">
               {window.location.origin}/register/{qrToken}
             </div>
-            <button
-              onClick={() => setQrToken(null)}
-              className="w-full bg-error text-on-error font-headline-md uppercase px-6 py-3 border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] hover:-translate-y-1 active:translate-y-1 transition-all"
-            >
-              CLOSE
-            </button>
+            <div className="flex w-full gap-3 relative z-10">
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/register/${qrToken}`;
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Arena Registration',
+                      text: 'Join the engineering arena!',
+                      url: url,
+                    }).catch(console.error);
+                  } else {
+                    navigator.clipboard.writeText(url);
+                    alert('Link copied to clipboard!');
+                  }
+                }}
+                className="flex-1 bg-primary-container text-on-surface font-headline-md uppercase px-2 py-3 border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] hover:-translate-y-1 active:translate-y-1 transition-all flex items-center justify-center gap-1 text-[14px]"
+              >
+                <span className="material-symbols-outlined text-[18px]">share</span>
+                SHARE
+              </button>
+              <button
+                onClick={() => setQrToken(null)}
+                className="flex-1 bg-error text-on-error font-headline-md uppercase px-2 py-3 border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] hover:-translate-y-1 active:translate-y-1 transition-all text-[14px]"
+              >
+                CLOSE
+              </button>
+            </div>
           </div>
         </div>
       )}
