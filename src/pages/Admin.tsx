@@ -104,6 +104,9 @@ const Admin = () => {
           supabase.from("registration_campaign_games").select("*").in("campaign_id", campaignIds)
         ]);
 
+        if (partsRes.error) console.error("partsRes error:", partsRes.error);
+        if (cgRes.error) console.error("cgRes error:", cgRes.error);
+
         if (partsRes.data) setParticipants(partsRes.data);
         if (cgRes.data) setCampaignGames(cgRes.data);
 
@@ -186,9 +189,11 @@ const Admin = () => {
     if (isAssigned) {
       const { error } = await supabase.from("registration_campaign_games").delete().match({ campaign_id: campaignId, game_id: gameId });
       if (!error) fetchData();
+      else alert("Error unassigning: " + error.message);
     } else {
       const { error } = await supabase.from("registration_campaign_games").insert([{ campaign_id: campaignId, game_id: gameId }]);
       if (!error) fetchData();
+      else alert("Error assigning: " + error.message);
     }
   };
 
