@@ -47,9 +47,21 @@ export function useAntiCheat({
       playSound('warning');
     };
 
+    let hiddenTimeout: ReturnType<typeof setTimeout> | null = null;
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        handleViolation();
+        // Wait 5 seconds before counting as a violation
+        // This allows quick system popups, notifications, or brief interruptions
+        hiddenTimeout = setTimeout(() => {
+          handleViolation();
+        }, 5000);
+      } else {
+        // If they return before the timeout, cancel it (no violation)
+        if (hiddenTimeout) {
+          clearTimeout(hiddenTimeout);
+          hiddenTimeout = null;
+        }
       }
     };
 
@@ -73,6 +85,7 @@ export function useAntiCheat({
       document.removeEventListener("copy", handleCopyPaste);
       document.removeEventListener("paste", handleCopyPaste);
       document.removeEventListener("cut", handleCopyPaste);
+      if (hiddenTimeout) clearTimeout(hiddenTimeout);
     };
   }, [isActive, showWarning]);
 
