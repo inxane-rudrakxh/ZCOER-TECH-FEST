@@ -2,8 +2,58 @@ import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import { supabase } from "../lib/supabase";
 import { QRCodeSVG } from "qrcode.react";
+import type { Session } from "@supabase/supabase-js";
 
 const Admin = () => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.signUp({
+      email: authEmail,
+      password: authPassword,
+    });
+    if (error) setAuthError(error.message);
+    else setAuthError("Check your email for the confirmation link!");
+    setAuthLoading(false);
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: authPassword,
+    });
+    if (error) setAuthError(error.message);
+    setAuthLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   const [activeTab, setActiveTab] = useState("overview"); // overview, campaigns, stage
   const [participants, setParticipants] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -123,6 +173,72 @@ const Admin = () => {
     }
   };
 
+  if (!session) {
+    return (
+      <div className="bg-surface min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="bg-surface-container-lowest border-[4px] border-on-surface rounded-2xl shadow-[8px_8px_0px_0px_#1c1b1b] w-full max-w-md overflow-hidden">
+          <div className="bg-secondary p-space-md border-b-[4px] border-on-surface">
+            <h1 className="font-headline-xl uppercase text-on-secondary tracking-tight">
+              ADMIN CONTROL
+            </h1>
+            <p className="font-body-md text-on-secondary/80 mt-1">
+              Secure Access Required
+            </p>
+          </div>
+          <div className="p-space-lg">
+            {authError && (
+              <div className="bg-error p-4 mb-6 text-on-error font-bold border-2 border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] rounded-lg">
+                {authError}
+              </div>
+            )}
+            <form className="flex flex-col gap-5">
+              <div className="flex flex-col">
+                <label className="font-label-badge uppercase text-on-surface font-bold mb-2">EMAIL</label>
+                <input
+                  required
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  className="bg-surface border-[2px] border-on-surface px-4 py-3 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b]"
+                  placeholder="admin@example.com"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="font-label-badge uppercase text-on-surface font-bold mb-2">PASSWORD</label>
+                <input
+                  required
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  className="bg-surface border-[2px] border-on-surface px-4 py-3 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b]"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="flex flex-col gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={authLoading}
+                  className="w-full bg-secondary text-on-secondary border-[3px] border-on-surface px-6 py-4 rounded-xl font-headline-md text-[18px] uppercase tracking-wide hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#1c1b1b] transition-all disabled:opacity-50"
+                >
+                  {authLoading ? "Authenticating..." : "SIGN IN"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSignUp}
+                  disabled={authLoading}
+                  className="w-full bg-surface-container-high text-on-surface border-[3px] border-on-surface px-6 py-4 rounded-xl font-headline-md text-[18px] uppercase tracking-wide hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#1c1b1b] transition-all disabled:opacity-50"
+                >
+                  SIGN UP
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased w-full min-h-screen">
       {/* Sidebar */}
@@ -232,6 +348,12 @@ const Admin = () => {
                   </div>
                 </div>
               </div>
+              <button
+                onClick={handleSignOut}
+                className="bg-error text-on-error border-2 border-on-surface px-4 py-2 rounded-lg font-bold text-sm uppercase hover:shadow-[2px_2px_0px_0px_#1c1b1b] transition-all"
+              >
+                SIGN OUT
+              </button>
             </div>
           </div>
 
