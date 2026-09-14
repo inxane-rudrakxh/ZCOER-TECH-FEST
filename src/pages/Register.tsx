@@ -90,7 +90,7 @@ const Register = () => {
     setIsSubmitting(true);
     setError(null);
 
-    const playerId = `TGA-${Math.floor(1000 + Math.random() * 9000)}`;
+    const playerId = `ZCOER-${Math.floor(1000 + Math.random() * 9000)}`;
     const secureToken = generateRandomString(32);
     try {
       const { data, error } = await supabase
