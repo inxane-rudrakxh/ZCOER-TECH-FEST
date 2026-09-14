@@ -69,6 +69,27 @@ const Admin = () => {
   const [isCreating, setIsCreating] = useState(false);
   
   const [qrToken, setQrToken] = useState<string | null>(null);
+  const [resetConfirmText, setResetConfirmText] = useState("");
+
+  const handleFactoryReset = async () => {
+    if (resetConfirmText !== "FACTORY RESET") return;
+    const confirmDelete = window.confirm("Are you ABSOLUTELY sure? This will delete all participants, scores, submissions, and campaigns.");
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    try {
+      await supabase.from("participants").delete().not("id", "is", null);
+      await supabase.from("registration_campaigns").delete().not("id", "is", null);
+
+      alert("SYSTEM FACTORY RESET COMPLETE. ALL DATA PURGED.");
+      setResetConfirmText("");
+      fetchData();
+    } catch (err: any) {
+      alert("Error resetting data: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     if (!session?.user?.id) return;
@@ -334,6 +355,17 @@ const Admin = () => {
             >
               <span className="material-symbols-outlined text-[20px] shrink-0">grading</span>
               <span className="truncate">Submissions Review</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`w-full flex items-center gap-3 px-4 py-3 uppercase tracking-wider transition-all rounded-xl font-headline-md text-[13px] whitespace-nowrap overflow-hidden text-left ${
+                activeTab === 'settings' 
+                  ? 'bg-primary-container text-on-surface font-bold border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b]' 
+                  : 'border-[3px] border-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:-translate-y-0.5 active:translate-y-0.5'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px] shrink-0 text-error">warning</span>
+              <span className="truncate text-error">Danger Zone</span>
             </button>
           </nav>
         </div>
@@ -740,6 +772,42 @@ const Admin = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className="space-y-6">
+              <div className="bg-error/10 p-6 rounded-xl shadow-md border-[2px] border-error border-b-[6px] border-r-[6px]">
+                <h2 className="font-headline-md text-headline-md text-error uppercase tracking-tight mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined">warning</span>
+                  Danger Zone
+                </h2>
+                <p className="font-body-md text-on-surface mb-6 font-bold">
+                  Use this to wipe all testing data before handing the system over for the live event. 
+                  This will PERMANENTLY DELETE all participants, scores, submissions, and campaigns.
+                </p>
+                <div className="flex flex-col gap-4 max-w-lg">
+                  <div className="flex flex-col gap-2">
+                    <label className="font-label-badge font-bold uppercase text-error text-sm">
+                      Type "FACTORY RESET" to confirm
+                    </label>
+                    <input 
+                      type="text" 
+                      value={resetConfirmText}
+                      onChange={e => setResetConfirmText(e.target.value)}
+                      placeholder="FACTORY RESET"
+                      className="w-full bg-surface text-on-surface border-[2px] border-error px-4 py-2 font-headline-md text-[16px] shadow-[3px_3px_0px_0px_rgba(255,0,0,0.5)] focus:outline-none"
+                    />
+                  </div>
+                  <button 
+                    onClick={handleFactoryReset}
+                    disabled={resetConfirmText !== "FACTORY RESET" || loading}
+                    className="bg-error text-on-error px-6 py-3 font-headline-md uppercase text-[16px] shadow-[3px_3px_0px_0px_#1c1b1b] border-[2px] border-on-surface hover:-translate-y-1 active:translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'PURGING SYSTEM...' : 'WIPE ALL DATA'}
+                  </button>
                 </div>
               </div>
             </div>
