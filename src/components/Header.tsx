@@ -36,8 +36,8 @@ const Header = () => {
               <img src="/ZCOER-Logo-1-scaled.jpg" alt="ZCOER" className="w-full h-full object-contain" />
             </div>
             <div>
-              <div className="font-headline-md text-[14px] sm:text-[16px] xl:text-[18px] tracking-tight uppercase leading-tight text-on-surface max-w-[200px] sm:max-w-[300px] xl:max-w-none truncate">
-                Zeal College Of Engineering & Research (Off Campus)
+              <div className="font-headline-md text-[12px] sm:text-[16px] xl:text-[18px] tracking-tight uppercase leading-tight text-on-surface w-[200px] sm:max-w-[300px] xl:max-w-none text-wrap sm:truncate">
+                Zeal College Of Engineering & Research
               </div>
               <div className="font-label-badge text-label-badge text-on-surface-variant font-bold tracking-wider mt-0.5">
                 AIDS &amp; AIML DEPTS
@@ -89,7 +89,7 @@ const Header = () => {
         </nav>
         <div className="flex items-center gap-3 shrink-0">
 
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+          <div className="hidden sm:flex w-8 h-8 rounded-full bg-primary items-center justify-center">
             <span className="material-symbols-outlined text-on-primary text-[18px]">
               person
             </span>

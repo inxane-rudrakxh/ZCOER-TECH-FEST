@@ -109,15 +109,17 @@ const Home = () => {
                 </p>
                 {/* CTA Action Cluster */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
-                  <Link
-                    className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary-container text-on-surface font-headline-md text-[18px] uppercase tracking-wider rounded-xl shadow-xl hover:-translate-y-1 active:translate-y-1 transition-all border-[3px] border-on-surface"
-                    to="/login"
+                  <a
+                    className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-inverse-surface text-inverse-on-surface font-headline-md text-[18px] uppercase tracking-wider rounded-xl shadow-[6px_6px_0px_0px_var(--tw-colors-secondary)] hover:-translate-y-1 active:translate-y-1 transition-all border-[3px] border-on-surface relative overflow-hidden"
+                    href="#pipeline"
                   >
-                    <span>STUDENT LOGIN</span>
-                    <span className="material-symbols-outlined font-black text-2xl group-hover:translate-x-1 transition-transform">
-                      login
+                    <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%)] bg-[length:250%_250%] group-hover:animate-pulse pointer-events-none"></div>
+                    <span className="w-3 h-3 rounded-full bg-error animate-ping"></span>
+                    <span className="relative z-10">INITIALIZE SEQUENCE</span>
+                    <span className="material-symbols-outlined font-black text-2xl group-hover:rotate-90 transition-transform relative z-10">
+                      arrow_forward
                     </span>
-                  </Link>
+                  </a>
                   <Link
                     className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-secondary text-on-secondary font-headline-md text-[16px] uppercase tracking-wider rounded-xl shadow-md hover:-translate-y-0.5 active:translate-y-0.5 transition-all border-[3px] border-on-surface"
                     to="/leaderboard"
