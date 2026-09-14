@@ -228,13 +228,31 @@ if (passed === testCases.length) {
         }
       }
 
-      const { error: attemptError } = await supabase.from("debug_submissions").upsert({
-        challenge_id: currentChallenge.id,
-        participant_id: participant.id,
-        submitted_code: currentCode,
-        score: score,
-        status: 'GRADED'
-      }, { onConflict: 'challenge_id, participant_id' });
+      // Manual upsert for debug_submissions
+      const { data: existingSub } = await supabase.from("debug_submissions")
+        .select("id")
+        .eq("challenge_id", currentChallenge.id)
+        .eq("participant_id", participant.id)
+        .single();
+
+      let attemptError;
+      if (existingSub) {
+        const { error } = await supabase.from("debug_submissions").update({
+          submitted_code: currentCode,
+          score: score,
+          status: 'GRADED'
+        }).eq("id", existingSub.id);
+        attemptError = error;
+      } else {
+        const { error } = await supabase.from("debug_submissions").insert({
+          challenge_id: currentChallenge.id,
+          participant_id: participant.id,
+          submitted_code: currentCode,
+          score: score,
+          status: 'GRADED'
+        });
+        attemptError = error;
+      }
 
       if (attemptError) throw attemptError;
       

@@ -140,7 +140,8 @@ CREATE TABLE debug_submissions (
     submitted_code TEXT NOT NULL,
     score NUMERIC(5,2),
     status TEXT DEFAULT 'SUBMITTED',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(challenge_id, participant_id)
 );
 
 -- AI Challenge Tables
