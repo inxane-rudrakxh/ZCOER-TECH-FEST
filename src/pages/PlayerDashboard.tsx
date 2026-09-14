@@ -64,20 +64,7 @@ const PlayerDashboard = () => {
           if (aiSubs) aiSubs.forEach((s: any) => { if (s.challenge_id?.game_id) subs.push({ game_id: s.challenge_id.game_id }) });
           setSubmissions(subs);
 
-          // Realtime Subscription
-          const channel = supabase.channel('realtime-games')
-            .on(
-              'postgres_changes',
-              { event: 'UPDATE', schema: 'public', table: 'games' },
-              (payload) => {
-                setGames((prevGames) =>
-                  prevGames.map((g) => (g.id === payload.new.id ? { ...g, ...payload.new } : g))
-                );
-              }
-            )
-            .subscribe();
-
-          (window as any).dashboardChannel = channel;
+          // Realtime Subscription is handled outside
         }
       } catch (err: any) {
         setError(err.message);
@@ -88,11 +75,22 @@ const PlayerDashboard = () => {
 
     fetchDashboard();
 
+    // Realtime Subscription
+    const channelName = `realtime-games-${Date.now()}-${Math.random()}`;
+    const channel = supabase.channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'games' },
+        (payload) => {
+          setGames((prevGames) =>
+            prevGames.map((g) => (g.id === payload.new.id ? { ...g, ...payload.new } : g))
+          );
+        }
+      )
+      .subscribe();
+
     return () => {
-      if ((window as any).dashboardChannel) {
-        supabase.removeChannel((window as any).dashboardChannel);
-        (window as any).dashboardChannel = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [playerToken]);
 
