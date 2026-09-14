@@ -71,23 +71,61 @@ const Admin = () => {
   const [qrToken, setQrToken] = useState<string | null>(null);
 
   const fetchData = async () => {
+    if (!session?.user?.id) return;
     setLoading(true);
     try {
-      const [partsRes, campsRes, gamesRes, cgRes, debugRes, aiRes] = await Promise.all([
-        supabase.from("participants").select("*, registration_campaigns(name)").order("created_at", { ascending: false }),
-        supabase.from("registration_campaigns").select("*").order("created_at", { ascending: false }),
-        supabase.from("games").select("*").order("created_at", { ascending: true }),
-        supabase.from("registration_campaign_games").select("*"),
-        supabase.from("debug_submissions").select("*, participants(full_name, player_id), debug_challenges(title)").order("created_at", { ascending: false }),
-        supabase.from("ai_submissions").select("*, participants(full_name, player_id), ai_challenges(title)").order("created_at", { ascending: false })
+      const user_id = session.user.id;
+
+      const { data: adminGames } = await supabase.from("games").select("*").eq("admin_id", user_id);
+      
+      if (!adminGames || adminGames.length === 0) {
+        // Auto-seed games for new admin
+        const baseGames = [
+          { slug: 'quiz', name: 'TECHNICAL QUIZ', description: 'Rapid-fire multiple choice test.', admin_id: user_id },
+          { slug: 'debug', name: 'CODE DEBUGGING', description: 'Live in-browser IDE sandbox.', admin_id: user_id },
+          { slug: 'ai', name: 'AI / PROMPT CHALLENGE', description: 'Generative AI Prompt Clash.', admin_id: user_id }
+        ];
+        await supabase.from("games").insert(baseGames);
+      }
+
+      const [campsRes, gamesRes] = await Promise.all([
+        supabase.from("registration_campaigns").select("*").eq("admin_id", user_id).order("created_at", { ascending: false }),
+        supabase.from("games").select("*").eq("admin_id", user_id).order("created_at", { ascending: true })
       ]);
       
-      if (partsRes.data) setParticipants(partsRes.data);
       if (campsRes.data) setCampaigns(campsRes.data);
       if (gamesRes.data) setGames(gamesRes.data);
-      if (cgRes.data) setCampaignGames(cgRes.data);
-      if (debugRes.data) setDebugSubmissions(debugRes.data);
-      if (aiRes.data) setAiSubmissions(aiRes.data);
+
+      const campaignIds = campsRes.data && campsRes.data.length > 0 ? campsRes.data.map(c => c.id) : [];
+
+      if (campaignIds.length > 0) {
+        const [partsRes, cgRes] = await Promise.all([
+          supabase.from("participants").select("*, registration_campaigns(name)").in("registered_via_campaign", campaignIds).order("created_at", { ascending: false }),
+          supabase.from("registration_campaign_games").select("*").in("campaign_id", campaignIds)
+        ]);
+
+        if (partsRes.data) setParticipants(partsRes.data);
+        if (cgRes.data) setCampaignGames(cgRes.data);
+
+        const participantIds = partsRes.data && partsRes.data.length > 0 ? partsRes.data.map(p => p.id) : [];
+
+        if (participantIds.length > 0) {
+          const [debugRes, aiRes] = await Promise.all([
+            supabase.from("debug_submissions").select("*, participants(full_name, player_id), debug_challenges(title)").in("participant_id", participantIds).order("created_at", { ascending: false }),
+            supabase.from("ai_submissions").select("*, participants(full_name, player_id), ai_challenges(title)").in("participant_id", participantIds).order("created_at", { ascending: false })
+          ]);
+          if (debugRes.data) setDebugSubmissions(debugRes.data);
+          if (aiRes.data) setAiSubmissions(aiRes.data);
+        } else {
+          setDebugSubmissions([]);
+          setAiSubmissions([]);
+        }
+      } else {
+        setParticipants([]);
+        setCampaignGames([]);
+        setDebugSubmissions([]);
+        setAiSubmissions([]);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -96,8 +134,10 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (session) {
+      fetchData();
+    }
+  }, [session]);
 
   const handleCreateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +148,7 @@ const Admin = () => {
 
     try {
       const { error } = await supabase.from("registration_campaigns").insert([
-        { name: newCampaignName, token, status: "OPEN" }
+        { name: newCampaignName, token, status: "OPEN", admin_id: session?.user?.id }
       ]);
       if (!error) {
         setNewCampaignName("");
