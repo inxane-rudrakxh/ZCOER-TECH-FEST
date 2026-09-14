@@ -13,13 +13,14 @@ const Register = () => {
 
   const [formData, setFormData] = useState({
     fullName: "",
-    college: "",
-    department: "",
+    college: "Zeal College of Engineering and Research(Off Campus)",
+    department: "CSE - A",
     academicYear: "1st Year",
     rollNo: "",
     mobile: "",
     selectedGameIds: [] as string[],
   });
+  const [collegeType, setCollegeType] = useState("Zeal College of Engineering and Research(Off Campus)");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successData, setSuccessData] = useState<{ playerId: string; secureToken: string } | null>(null);
 
@@ -225,44 +226,82 @@ const Register = () => {
 
                   <div className="flex flex-col">
                     <label className="font-label-badge uppercase text-on-surface font-bold mb-2">COLLEGE / INSTITUTE *</label>
-                    <input
-                      required
-                      type="text"
-                      name="college"
-                      value={formData.college}
-                      onChange={handleInputChange}
-                      className="bg-surface border-[2px] border-on-surface px-4 py-3 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b]"
-                      placeholder="e.g. V.P. College of Engineering"
-                    />
+                    <div className="relative">
+                      <select
+                        value={collegeType}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCollegeType(val);
+                          if (val !== "Other") {
+                            setFormData(prev => ({ ...prev, college: val }));
+                          } else {
+                            setFormData(prev => ({ ...prev, college: "" }));
+                          }
+                        }}
+                        className="w-full appearance-none bg-surface border-[2px] border-on-surface px-4 py-3 pr-10 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b] cursor-pointer"
+                      >
+                        <option value="Zeal College of Engineering and Research(Off Campus)">Zeal College of Engineering and Research(Off Campus)</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface">
+                        <span className="material-symbols-outlined">expand_more</span>
+                      </div>
+                    </div>
+                    {collegeType === "Other" && (
+                      <input
+                        required
+                        type="text"
+                        name="college"
+                        value={formData.college}
+                        onChange={handleInputChange}
+                        className="mt-3 bg-surface border-[2px] border-on-surface px-4 py-3 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b]"
+                        placeholder="Type your college name..."
+                      />
+                    )}
                   </div>
 
                   <div className="flex flex-col">
                     <label className="font-label-badge uppercase text-on-surface font-bold mb-2">DEPARTMENT *</label>
-                    <input
-                      required
-                      type="text"
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      className="bg-surface border-[2px] border-on-surface px-4 py-3 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b]"
-                      placeholder="e.g. Computer Science"
-                    />
+                    <div className="relative">
+                      <select
+                        required
+                        name="department"
+                        value={formData.department}
+                        onChange={handleInputChange}
+                        className="w-full appearance-none bg-surface border-[2px] border-on-surface px-4 py-3 pr-10 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b] cursor-pointer"
+                      >
+                        <option value="CSE - A">CSE - A</option>
+                        <option value="CSE - B">CSE - B</option>
+                        <option value="AIDS - C">AIDS - C</option>
+                        <option value="AIDS - D">AIDS - D</option>
+                        <option value="ECE - E">ECE - E</option>
+                        <option value="E&TC - F">E&TC - F</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface">
+                        <span className="material-symbols-outlined">expand_more</span>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="flex flex-col">
                       <label className="font-label-badge uppercase text-on-surface font-bold mb-2">YEAR *</label>
-                      <select
-                        name="academicYear"
-                        value={formData.academicYear}
-                        onChange={handleInputChange}
-                        className="bg-surface border-[2px] border-on-surface px-4 py-3 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b] cursor-pointer"
-                      >
-                        <option value="1st Year">1st Year</option>
-                        <option value="2nd Year">2nd Year</option>
-                        <option value="3rd Year">3rd Year</option>
-                        <option value="4th Year">4th Year</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          name="academicYear"
+                          value={formData.academicYear}
+                          onChange={handleInputChange}
+                          className="w-full appearance-none bg-surface border-[2px] border-on-surface px-4 py-3 pr-10 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b] cursor-pointer"
+                        >
+                          <option value="1st Year">1st Year</option>
+                          <option value="2nd Year">2nd Year</option>
+                          <option value="3rd Year">3rd Year</option>
+                          <option value="4th Year">4th Year</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface">
+                          <span className="material-symbols-outlined">expand_more</span>
+                        </div>
+                      </div>
                     </div>
                     <div className="flex flex-col">
                       <label className="font-label-badge uppercase text-on-surface font-bold mb-2">ROLL NUMBER *</label>
