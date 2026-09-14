@@ -97,11 +97,7 @@ const Header = () => {
               leaderboard
             </span>
           </Link>
-          <div className="hidden sm:flex w-8 h-8 rounded-full bg-primary items-center justify-center">
-            <span className="material-symbols-outlined text-on-primary text-[18px]">
-              person
-            </span>
-          </div>
+
         </div>
       </div>
     </header>
