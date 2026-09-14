@@ -88,7 +88,15 @@ const Header = () => {
           </Link>
         </nav>
         <div className="flex items-center gap-3 shrink-0">
-
+          <Link
+            to="/leaderboard"
+            className="flex lg:hidden w-8 h-8 rounded-full bg-secondary items-center justify-center border-2 border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b]"
+            title="View Leaderboard"
+          >
+            <span className="material-symbols-outlined text-on-secondary text-[16px]">
+              leaderboard
+            </span>
+          </Link>
           <div className="hidden sm:flex w-8 h-8 rounded-full bg-primary items-center justify-center">
             <span className="material-symbols-outlined text-on-primary text-[18px]">
               person
