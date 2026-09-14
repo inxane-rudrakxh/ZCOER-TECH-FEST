@@ -36,7 +36,7 @@ const Header = () => {
               <img src="/ZCOER-Logo-1-scaled.jpg" alt="ZCOER" className="w-full h-full object-contain" />
             </div>
             <div>
-              <div className="font-headline-md text-[12px] sm:text-[16px] xl:text-[18px] tracking-tight uppercase leading-tight text-on-surface w-[200px] sm:max-w-[300px] xl:max-w-none text-wrap sm:truncate">
+              <div className="font-headline-md text-[12px] sm:text-[16px] xl:text-[18px] tracking-tight uppercase leading-tight text-on-surface whitespace-normal lg:whitespace-nowrap">
                 Zeal College Of Engineering & Research
               </div>
               <div className="font-label-badge text-label-badge text-on-surface-variant font-bold tracking-wider mt-0.5">
