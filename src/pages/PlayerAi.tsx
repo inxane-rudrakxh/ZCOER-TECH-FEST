@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAntiCheat } from "../hooks/useAntiCheat";
 
 const PlayerAi = () => {
   const { playerToken } = useParams<{ playerToken: string }>();
@@ -74,7 +75,7 @@ const PlayerAi = () => {
         
         let initialScore = 0;
         let startIndex = 0;
-        let unsubmittedIndex = -1;
+        let unsubmittedIndex = 0;
 
         if (attempts && attempts.length > 0) {
           const submittedChallengeIds = attempts.map(a => a.challenge_id);
@@ -122,32 +123,15 @@ const PlayerAi = () => {
     return () => clearInterval(timer);
   }, [timeLeft, submitted, loading, error, prompts, cheated, currentChallengeIndex]);
 
-  useEffect(() => {
-    if (submitted || cheated || loading || error || challenges.length === 0 || !participant) return;
-
-    window.history.pushState(null, "", window.location.href);
-
-    const handleCheatTrigger = () => {
+  const { overlay: antiCheatOverlay } = useAntiCheat({
+    isActive: !submitted && !loading && !error && challenges.length > 0 && !!participant,
+    participantId: participant?.id || "",
+    gameId: challenges[0]?.game_id || "",
+    onDisqualify: () => {
       setCheated(true);
       handleCheatSubmit();
-    };
-
-    const handleVisibilityChange = (e?: Event) => {
-      if (document.hidden || e?.type === 'blur') {
-        handleCheatTrigger();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleVisibilityChange);
-    window.addEventListener("popstate", handleCheatTrigger);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleVisibilityChange);
-      window.removeEventListener("popstate", handleCheatTrigger);
-    };
-  }, [submitted, cheated, loading, error, challenges, participant]);
+    }
+  });
 
   const handleCheatSubmit = async () => {
     if (submitting) return;
@@ -310,6 +294,7 @@ Return ONLY a valid JSON object in this exact format:
 
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased w-full min-h-screen flex flex-col">
+      {antiCheatOverlay}
       <Header />
       <main className="w-full pt-28 flex-grow flex flex-col">
         <section className="w-full bg-surface-container border-b-[3px] border-on-surface py-3 px-4">

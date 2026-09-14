@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import Editor from "@monaco-editor/react";
+import { useAntiCheat } from "../hooks/useAntiCheat";
 
 const PlayerDebug = () => {
   const { playerToken } = useParams<{ playerToken: string }>();
@@ -75,7 +76,7 @@ const PlayerDebug = () => {
         
         let initialScore = 0;
         let startIndex = 0;
-        let unsubmittedIndex = -1;
+        let unsubmittedIndex = 0;
         let preloadedCodes: Record<string, string> = {};
 
         // Preload initial code for all challenges
@@ -135,32 +136,15 @@ const PlayerDebug = () => {
     return () => clearInterval(timer);
   }, [timeLeft, submitted, loading, error, codes, cheated, currentChallengeIndex]);
 
-  useEffect(() => {
-    if (submitted || cheated || loading || error || challenges.length === 0 || !participant) return;
-
-    window.history.pushState(null, "", window.location.href);
-
-    const handleCheatTrigger = () => {
+  const { overlay: antiCheatOverlay } = useAntiCheat({
+    isActive: !submitted && !loading && !error && challenges.length > 0 && !!participant,
+    participantId: participant?.id || "",
+    gameId: challenges[0]?.game_id || "",
+    onDisqualify: () => {
       setCheated(true);
       handleCheatSubmit();
-    };
-
-    const handleVisibilityChange = (e?: Event) => {
-      if (document.hidden || e?.type === 'blur') {
-        handleCheatTrigger();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleVisibilityChange);
-    window.addEventListener("popstate", handleCheatTrigger);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleVisibilityChange);
-      window.removeEventListener("popstate", handleCheatTrigger);
-    };
-  }, [submitted, cheated, loading, error, challenges, participant]);
+    }
+  });
 
   const handleCheatSubmit = async () => {
     if (submitting) return;
@@ -328,6 +312,7 @@ if (passed === testCases.length) {
 
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased w-full h-screen flex flex-col overflow-hidden">
+      {antiCheatOverlay}
       <Header />
       <main className="w-full pt-20 flex-grow flex flex-col">
         <section className="w-full bg-surface-container border-b-[3px] border-on-surface py-3 px-4 flex-shrink-0">

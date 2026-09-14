@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAntiCheat } from "../hooks/useAntiCheat";
 
 const PlayerQuiz = () => {
   const { playerToken } = useParams<{ playerToken: string }>();
@@ -45,8 +46,8 @@ const PlayerQuiz = () => {
         const { data: quizData } = await supabase.from("quizzes").select("*").eq("game_id", gameData.id).eq("status", "LIVE").single();
         if (!quizData) throw new Error("No active quiz found.");
         setQuiz(quizData);
-        setTimeLeft(quizData.duration_minutes * 60);
 
+        let selectedQuestions: any[] = [];
         // Fetch questions and options
         const { data: qData } = await supabase.from("quiz_questions").select("*, quiz_options!quiz_options_question_id_fkey(*)").eq("quiz_id", quizData.id);
         if (qData) {
@@ -56,7 +57,7 @@ const PlayerQuiz = () => {
           const hard = qData.filter(q => q.difficulty === 'hard').sort(() => Math.random() - 0.5);
           
           // Select 5 from each (fallback to all available if less than 5)
-          const selectedQuestions = [
+          selectedQuestions = [
             ...easy.slice(0, 5),
             ...medium.slice(0, 5),
             ...hard.slice(0, 5)
@@ -69,6 +70,8 @@ const PlayerQuiz = () => {
         const { data: attemptData } = await supabase.from("quiz_attempts").select("*").eq("quiz_id", quizData.id).eq("participant_id", pData.id).single();
         if (attemptData && attemptData.status === 'COMPLETED') {
           setSubmitted(true);
+        } else {
+          setTimeLeft(selectedQuestions.length * 60);
         }
 
       } catch (err: any) {
@@ -96,32 +99,15 @@ const PlayerQuiz = () => {
     return () => clearInterval(timer);
   }, [timeLeft, submitted, loading, error, cheated]);
 
-  useEffect(() => {
-    if (submitted || cheated || loading || error || !quiz || !participant) return;
-
-    window.history.pushState(null, "", window.location.href);
-
-    const handleCheatTrigger = () => {
+  const { overlay: antiCheatOverlay } = useAntiCheat({
+    isActive: !submitted && !loading && !error && !!quiz && !!participant,
+    participantId: participant?.id || "",
+    gameId: quiz?.game_id || "",
+    onDisqualify: () => {
       setCheated(true);
       handleCheatSubmit();
-    };
-
-    const handleVisibilityChange = (e?: Event) => {
-      if (document.hidden || e?.type === 'blur') {
-        handleCheatTrigger();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleVisibilityChange);
-    window.addEventListener("popstate", handleCheatTrigger);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleVisibilityChange);
-      window.removeEventListener("popstate", handleCheatTrigger);
-    };
-  }, [submitted, cheated, loading, error, quiz, participant]);
+    }
+  });
 
   const handleCheatSubmit = async () => {
     if (submitting) return;
@@ -250,6 +236,8 @@ const PlayerQuiz = () => {
 
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased w-full min-h-screen flex flex-col">
+      {antiCheatOverlay}
+      
       <Header />
       <main className="w-full pt-28 flex-grow flex flex-col">
         <section className="w-full bg-surface-container border-b-[3px] border-on-surface py-3 px-4">
