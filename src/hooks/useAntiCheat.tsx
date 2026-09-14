@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { playSound } from "../lib/audio";
 
 interface AntiCheatOptions {
   isActive: boolean;
@@ -43,6 +44,7 @@ export function useAntiCheat({
       
       setWarnings(w => w + 1);
       setShowWarning(true);
+      playSound('warning');
     };
 
     const handleVisibilityChange = () => {

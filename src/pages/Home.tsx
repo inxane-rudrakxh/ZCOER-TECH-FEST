@@ -247,7 +247,7 @@ const Home = () => {
                         ⚡ 120 FPS TELEMETRY
                       </span>
                       <span className="px-3 py-1 rounded bg-secondary-fixed text-on-secondary-fixed font-label-badge text-xs uppercase font-bold">
-                        🏆 ₹25,000 POT
+                        🏆 TOP 3 CERTIFICATES
                       </span>
                     </div>
                   </div>
@@ -283,7 +283,7 @@ const Home = () => {
                 </div>
                 <div>
                   <div className="font-display-hero text-headline-xl text-on-surface tracking-tight leading-none mb-1">
-                    428+
+                    {playerCount || 0}
                   </div>
                   <p className="font-headline-md text-headline-md uppercase text-on-surface leading-tight">
                     PLAYERS REGISTERED
@@ -313,14 +313,13 @@ const Home = () => {
                 </div>
                 <div>
                   <div className="font-display-hero text-headline-xl tracking-tight leading-none mb-1 text-primary-container">
-                    ₹25,000
+                    CERTIFICATE
                   </div>
                   <p className="font-headline-md text-headline-md uppercase text-on-secondary leading-tight">
-                    PRIZE POOL &amp; TROPHIES
+                    FOR TOP 3 WINNERS
                   </p>
                   <p className="font-body-md text-body-md text-on-secondary-container mt-2">
-                    Exclusive champion shield, custom engineering trophies, plus
-                    verified merit certificates for every stage finalist.
+                    Exclusive verified merit certificates for the top 3 grand stage finalists.
                   </p>
                 </div>
                 <div className="mt-6 pt-3 border-t border-on-secondary/20 flex items-center justify-between font-label-code text-xs">
@@ -458,7 +457,7 @@ const Home = () => {
                       GRAND WINNER
                     </div>
                     <div className="font-label-code text-[11px] text-on-secondary-container mt-2">
-                      ₹25,000 + Trophy
+                      Certificate of Merit
                     </div>
                   </div>
                 </div>

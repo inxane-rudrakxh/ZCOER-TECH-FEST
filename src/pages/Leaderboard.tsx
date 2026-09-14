@@ -2,19 +2,27 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabase";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("all");
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const { data: scoresData, error: scoresError } = await supabase
-          .from("scores")
-          .select("score, time_taken_seconds, participant_id, participants(full_name, player_id)");
+        const [scoresRes, campaignsRes] = await Promise.all([
+          supabase.from("scores").select("score, time_taken_seconds, participant_id, participants(full_name, player_id, registered_via_campaign)"),
+          supabase.from("registration_campaigns").select("id, name")
+        ]);
 
-        if (scoresError) throw scoresError;
+        if (scoresRes.error) throw scoresRes.error;
+        if (campaignsRes.data) setCampaigns(campaignsRes.data);
+
+        const scoresData = scoresRes.data;
 
         if (scoresData) {
           // Aggregate scores by participant
@@ -27,6 +35,7 @@ const Leaderboard = () => {
                 participant_id: pid,
                 full_name: (entry.participants as any)?.full_name || "Unknown Agent",
                 player_id: (entry.participants as any)?.player_id || "UNK-000",
+                campaign_id: (entry.participants as any)?.registered_via_campaign,
                 total_score: 0,
                 total_time: 0,
                 games_played: 0
@@ -73,6 +82,42 @@ const Leaderboard = () => {
     };
   }, []);
 
+  const filteredLeaderboard = selectedCampaignId === "all" 
+    ? leaderboard 
+    : leaderboard.filter(p => p.campaign_id === selectedCampaignId);
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    const title = selectedCampaignId === "all" ? "Global Rankings" : `Rankings - ${campaigns.find(c => c.id === selectedCampaignId)?.name || 'Campaign'}`;
+    doc.text(title, 14, 22);
+    
+    // Add date
+    doc.setFontSize(11);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableData = filteredLeaderboard.map((player, index) => [
+      `#${index + 1}`,
+      player.player_id,
+      player.full_name,
+      `${player.games_played} / 3`,
+      player.total_score.toFixed(2)
+    ]);
+
+    autoTable(doc, {
+      startY: 35,
+      head: [['Rank', 'Player ID', 'Name', 'Games', 'Score']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] }
+    });
+
+    doc.save(`leaderboard_${selectedCampaignId === 'all' ? 'global' : selectedCampaignId}.pdf`);
+  };
+
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased w-full min-h-screen flex flex-col">
       <Header />
@@ -101,6 +146,29 @@ const Leaderboard = () => {
                 </div>
               </div>
 
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <span className="material-symbols-outlined text-on-surface-variant">filter_list</span>
+                  <select 
+                    value={selectedCampaignId}
+                    onChange={(e) => setSelectedCampaignId(e.target.value)}
+                    className="bg-surface text-on-surface border-[2px] border-on-surface px-4 py-2 font-headline-md uppercase text-sm shadow-[2px_2px_0px_0px_#1c1b1b] focus:outline-none w-full sm:w-auto"
+                  >
+                    <option value="all">ALL CAMPAIGNS (GLOBAL)</option>
+                    {campaigns.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  onClick={handleExportPDF}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-secondary text-on-secondary px-4 py-2 font-headline-md uppercase text-sm border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[18px]">download</span>
+                  EXPORT PDF
+                </button>
+              </div>
+
               {loading ? (
                 <div className="py-20 text-center font-label-code text-surface-variant animate-pulse">
                   AGGREGATING NEURAL SCORES...
@@ -122,7 +190,7 @@ const Leaderboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {leaderboard.map((player, index) => (
+                      {filteredLeaderboard.map((player, index) => (
                         <tr 
                           key={player.participant_id}
                           className="border-b border-surface-variant/10 hover:bg-surface-variant/10 transition-colors"

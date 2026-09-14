@@ -198,6 +198,25 @@ const PlayerDashboard = () => {
                 const displayScore = scoreEntry ? `SCORE: ${scoreEntry.score}` : isSubmitted ? "WAITING FOR EVALUATION" : "WAITING FOR ADMIN...";
                 const showCompleted = !!isSubmitted || game.status === 'COMPLETED';
 
+                // Progression Logic
+                let isLockedByProgression = false;
+                let lockedMessage = "";
+                
+                const quizGame = games.find(g => g.slug === 'quiz');
+                const debugGame = games.find(g => g.slug === 'debug');
+                
+                const isQuizCompleted = quizGame ? !!(scores.find(s => s.game_id === quizGame.id) || submissions.find(s => s.game_id === quizGame.id)) : true;
+                const isDebugCompleted = debugGame ? !!(scores.find(s => s.game_id === debugGame.id) || submissions.find(s => s.game_id === debugGame.id)) : true;
+
+                if (game.slug === 'debug' && !isQuizCompleted) {
+                  isLockedByProgression = true;
+                  lockedMessage = "COMPLETE QUIZ FIRST";
+                }
+                if (game.slug === 'ai' && !isDebugCompleted) {
+                  isLockedByProgression = true;
+                  lockedMessage = "COMPLETE DEBUGGING FIRST";
+                }
+
                 return (
                   <div key={game.id} className="bg-surface-container-lowest border-[3px] border-on-surface shadow-[6px_6px_0px_0px_#1c1b1b] p-6 flex flex-col md:flex-row gap-6 justify-between">
                     <div className="flex flex-col gap-3">
@@ -219,7 +238,7 @@ const PlayerDashboard = () => {
                     </div>
 
                     <div className="flex flex-col justify-end min-w-[200px]">
-                      {isLive && !isSubmitted ? (
+                      {isLive && !isSubmitted && !isLockedByProgression ? (
                         <button
                           onClick={() => navigate(`/player/${playerToken}/${game.slug}`)}
                           className="w-full py-4 bg-error text-on-error font-headline-md text-[16px] uppercase tracking-wider border-[3px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#1c1b1b] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
@@ -232,7 +251,7 @@ const PlayerDashboard = () => {
                           <span className="material-symbols-outlined text-[18px]">
                             {showCompleted ? 'emoji_events' : 'lock_clock'}
                           </span>
-                          {showCompleted ? displayScore : 'WAITING FOR ADMIN...'}
+                          {showCompleted ? displayScore : isLockedByProgression ? lockedMessage : 'WAITING FOR ADMIN...'}
                         </div>
                       )}
                     </div>

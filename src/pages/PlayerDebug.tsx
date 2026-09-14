@@ -57,18 +57,16 @@ const PlayerDebug = () => {
         
         const N = uuidToSeed(pData.id);
         const easyChallenges = challengeData.filter(c => c.difficulty === 'easy');
-        const mediumChallenges = challengeData.filter(c => c.difficulty === 'medium');
-        const hardChallenges = challengeData.filter(c => c.difficulty === 'hard');
 
-        if (easyChallenges.length === 0 || mediumChallenges.length === 0 || hardChallenges.length === 0) {
-           throw new Error("Missing challenges for one or more difficulties.");
+        if (easyChallenges.length < 3) {
+           throw new Error("Missing easy challenges.");
         }
 
-        const selectedEasy = easyChallenges[N % easyChallenges.length];
-        const selectedMedium = mediumChallenges[N % mediumChallenges.length];
-        const selectedHard = hardChallenges[N % hardChallenges.length];
+        const selectedEasy1 = easyChallenges[N % easyChallenges.length];
+        const selectedEasy2 = easyChallenges[(N + 1) % easyChallenges.length];
+        const selectedEasy3 = easyChallenges[(N + 2) % easyChallenges.length];
 
-        const sortedChallenges = [selectedEasy, selectedMedium, selectedHard];
+        const sortedChallenges = [selectedEasy1, selectedEasy2, selectedEasy3];
         setChallenges(sortedChallenges);
 
         // Fetch submissions
@@ -122,7 +120,7 @@ const PlayerDebug = () => {
   }, [playerToken]);
 
   useEffect(() => {
-    if (timeLeft <= 0 || submitted || loading || error) return;
+    if (submitted || loading || error || cheated || timeLeft <= 0) return;
     const timer = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
@@ -134,7 +132,7 @@ const PlayerDebug = () => {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, submitted, loading, error, codes, cheated, currentChallengeIndex]);
+  }, [submitted, loading, error, cheated, currentChallengeIndex]);
 
   const { overlay: antiCheatOverlay } = useAntiCheat({
     isActive: !submitted && !loading && !error && challenges.length > 0 && !!participant,

@@ -61,8 +61,6 @@ const Admin = () => {
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [games, setGames] = useState<any[]>([]);
   const [campaignGames, setCampaignGames] = useState<any[]>([]);
-  const [debugSubmissions, setDebugSubmissions] = useState<any[]>([]);
-  const [aiSubmissions, setAiSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [newCampaignName, setNewCampaignName] = useState("");
@@ -119,24 +117,10 @@ const Admin = () => {
         if (partsRes.data) setParticipants(partsRes.data);
         if (cgRes.data) setCampaignGames(cgRes.data);
 
-        const participantIds = partsRes.data && partsRes.data.length > 0 ? partsRes.data.map(p => p.id) : [];
 
-        if (participantIds.length > 0) {
-          const [debugRes, aiRes] = await Promise.all([
-            supabase.from("debug_submissions").select("*, participants(full_name, player_id), debug_challenges(title)").in("participant_id", participantIds).order("created_at", { ascending: false }),
-            supabase.from("ai_submissions").select("*, participants(full_name, player_id), ai_challenges(title)").in("participant_id", participantIds).order("created_at", { ascending: false })
-          ]);
-          if (debugRes.data) setDebugSubmissions(debugRes.data);
-          if (aiRes.data) setAiSubmissions(aiRes.data);
-        } else {
-          setDebugSubmissions([]);
-          setAiSubmissions([]);
-        }
       } else {
         setParticipants([]);
         setCampaignGames([]);
-        setDebugSubmissions([]);
-        setAiSubmissions([]);
       }
     } catch (error) {
       console.error(error);
@@ -211,23 +195,6 @@ const Admin = () => {
     if (!error) fetchData();
   };
 
-  const gradeSubmission = async (table: string, id: string, score: number, participantId: string, gameSlug: string) => {
-    if (isNaN(score)) return;
-    const { error } = await supabase.from(table).update({ score, status: 'GRADED' }).eq("id", id);
-    if (!error) {
-      const game = games.find((g: any) => g.slug === gameSlug);
-      if (game) {
-        await supabase.from("scores").upsert({
-          participant_id: participantId,
-          game_id: game.id,
-          score: score,
-          time_taken_seconds: 0
-        }, { onConflict: 'participant_id, game_id' });
-      }
-      alert("Score saved!");
-      fetchData();
-    }
-  };
 
   if (!session) {
     return (
@@ -344,17 +311,6 @@ const Admin = () => {
             >
               <span className="material-symbols-outlined text-[20px] shrink-0">tune</span>
               <span className="truncate">Stage Controls</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('submissions')}
-              className={`w-full flex items-center gap-3 px-4 py-3 uppercase tracking-wider transition-all rounded-xl font-headline-md text-[13px] whitespace-nowrap overflow-hidden text-left ${
-                activeTab === 'submissions' 
-                  ? 'bg-primary-container text-on-surface font-bold border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b]' 
-                  : 'border-[3px] border-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:-translate-y-0.5 active:translate-y-0.5'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px] shrink-0">grading</span>
-              <span className="truncate">Submissions Review</span>
             </button>
             <button
               onClick={() => setActiveTab('settings')}
@@ -685,90 +641,6 @@ const Admin = () => {
                             SET {status}
                           </button>
                         ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'submissions' && (
-            <div className="space-y-6">
-              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-md border-[2px] border-on-surface border-b-[6px] border-r-[6px]">
-                <h2 className="font-headline-md text-headline-md text-on-surface uppercase tracking-tight mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary">grading</span>
-                  AI Prompt Submissions
-                </h2>
-                <div className="grid grid-cols-1 gap-4">
-                  {aiSubmissions.length === 0 && <p className="text-on-surface-variant font-label-code">No AI submissions yet.</p>}
-                  {aiSubmissions.map(sub => (
-                    <div key={sub.id} className="border-[2px] border-on-surface p-4 bg-surface rounded-xl flex flex-col md:flex-row gap-4 shadow-[4px_4px_0px_0px_#1c1b1b]">
-                      <div className="flex-grow">
-                        <div className="font-label-badge font-bold uppercase mb-1">
-                          {sub.participants?.full_name} ({sub.participants?.player_id}) - {sub.ai_challenges?.title}
-                        </div>
-                        <div className="bg-surface-container p-3 rounded font-body-md border-[2px] border-on-surface whitespace-pre-wrap">
-                          {sub.prompt_used}
-                        </div>
-                      </div>
-                      <div className="w-full md:w-48 flex flex-col gap-2 justify-center shrink-0">
-                        <input 
-                          type="number" 
-                          placeholder="Score (0-100)" 
-                          defaultValue={sub.score} 
-                          id={`score-ai-${sub.id}`}
-                          className="w-full bg-surface text-on-surface border-[2px] border-on-surface px-3 py-2 font-headline-md shadow-[2px_2px_0px_0px_#1c1b1b]" 
-                        />
-                        <button 
-                          onClick={() => {
-                            const val = parseInt((document.getElementById(`score-ai-${sub.id}`) as HTMLInputElement).value);
-                            gradeSubmission('ai_submissions', sub.id, val, sub.participant_id, 'ai');
-                          }}
-                          className="w-full bg-secondary text-on-secondary font-headline-md uppercase px-4 py-2 border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5"
-                        >
-                          {sub.status === 'GRADED' ? 'UPDATE' : 'GRADE'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-md border-[2px] border-on-surface border-b-[6px] border-r-[6px]">
-                <h2 className="font-headline-md text-headline-md text-on-surface uppercase tracking-tight mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary">code</span>
-                  Debug Submissions
-                </h2>
-                <div className="grid grid-cols-1 gap-4">
-                  {debugSubmissions.length === 0 && <p className="text-on-surface-variant font-label-code">No debug submissions yet.</p>}
-                  {debugSubmissions.map(sub => (
-                    <div key={sub.id} className="border-[2px] border-on-surface p-4 bg-surface rounded-xl flex flex-col gap-4 shadow-[4px_4px_0px_0px_#1c1b1b]">
-                      <div>
-                        <div className="font-label-badge font-bold uppercase mb-1">
-                          {sub.participants?.full_name} ({sub.participants?.player_id}) - {sub.debug_challenges?.title}
-                        </div>
-                        <pre className="bg-[#1e1e1e] text-[#d4d4d4] p-4 rounded font-label-code text-sm border-[2px] border-on-surface overflow-x-auto">
-                          {sub.submitted_code}
-                        </pre>
-                      </div>
-                      <div className="flex items-center gap-2 justify-end">
-                        <input 
-                          type="number" 
-                          placeholder="Score (0-100)" 
-                          defaultValue={sub.score} 
-                          id={`score-debug-${sub.id}`}
-                          className="w-32 bg-surface text-on-surface border-[2px] border-on-surface px-3 py-2 font-headline-md shadow-[2px_2px_0px_0px_#1c1b1b]" 
-                        />
-                        <button 
-                          onClick={() => {
-                            const val = parseInt((document.getElementById(`score-debug-${sub.id}`) as HTMLInputElement).value);
-                            gradeSubmission('debug_submissions', sub.id, val, sub.participant_id, 'debug');
-                          }}
-                          className="bg-secondary text-on-secondary font-headline-md uppercase px-6 py-2 border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5"
-                        >
-                          {sub.status === 'GRADED' ? 'UPDATE SCORE' : 'SAVE SCORE'}
-                        </button>
                       </div>
                     </div>
                   ))}
