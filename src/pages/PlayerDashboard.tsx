@@ -58,10 +58,12 @@ const PlayerDashboard = () => {
 
           const { data: debugSubs } = await supabase.from("debug_submissions").select("challenge_id(game_id)").eq("participant_id", pData.id);
           const { data: aiSubs } = await supabase.from("ai_submissions").select("challenge_id(game_id)").eq("participant_id", pData.id);
+          const { data: quizSubs } = await supabase.from("quiz_attempts").select("quiz_id(game_id)").eq("participant_id", pData.id);
           
           const subs: any[] = [];
           if (debugSubs) debugSubs.forEach((s: any) => { if (s.challenge_id?.game_id) subs.push({ game_id: s.challenge_id.game_id }) });
           if (aiSubs) aiSubs.forEach((s: any) => { if (s.challenge_id?.game_id) subs.push({ game_id: s.challenge_id.game_id }) });
+          if (quizSubs) quizSubs.forEach((s: any) => { if (s.quiz_id?.game_id) subs.push({ game_id: s.quiz_id.game_id }) });
           setSubmissions(subs);
 
           // Realtime Subscription is handled outside
@@ -217,7 +219,7 @@ const PlayerDashboard = () => {
                     </div>
 
                     <div className="flex flex-col justify-end min-w-[200px]">
-                      {isLive ? (
+                      {isLive && !isSubmitted ? (
                         <button
                           onClick={() => navigate(`/player/${playerToken}/${game.slug}`)}
                           className="w-full py-4 bg-error text-on-error font-headline-md text-[16px] uppercase tracking-wider border-[3px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#1c1b1b] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"

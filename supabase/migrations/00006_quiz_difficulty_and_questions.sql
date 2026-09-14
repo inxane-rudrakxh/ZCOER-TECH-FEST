@@ -1,16 +1,18 @@
 -- Migration: Add quiz difficulties and a massive question bank
 ALTER TABLE quiz_questions ADD COLUMN IF NOT EXISTS difficulty TEXT DEFAULT 'medium';
-DELETE FROM quiz_questions WHERE quiz_id = '8ca699d1-3fb3-469b-8e12-cb40d58f335b';
 
 -- Insert 60 new questions for Tech Quiz (ID: 8ca699d1-3fb3-469b-8e12-cb40d58f335b)
 DO $$
 DECLARE
+    v_quiz_id UUID;
     q_id UUID;
     o_id1 UUID; o_id2 UUID; o_id3 UUID; o_id4 UUID;
 BEGIN
+    SELECT id INTO v_quiz_id FROM quizzes LIMIT 1;
+    DELETE FROM quiz_questions WHERE quiz_id = v_quiz_id;
     -- Question: What does HTML stand for?...
     q_id := 'a8aac2e8-93e2-4454-ae5b-877ce0dc2e5a';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does HTML stand for?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does HTML stand for?', 1, 'easy');
     o_id1 := '57efabc4-a7c1-4ec5-88ce-a15529d3b5a0';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Hyper Text Markup Language');
     o_id2 := '8b7bf59d-0287-4945-93b3-f64376d7a30f';
@@ -23,7 +25,7 @@ BEGIN
 
     -- Question: Which of the following is NOT ...
     q_id := '87eb159e-60fa-4084-9d42-8b503ef31531';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which of the following is NOT a programming language?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which of the following is NOT a programming language?', 1, 'easy');
     o_id1 := '97411967-bc26-4082-ac6c-66104f1d7b19';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Python');
     o_id2 := 'ad042011-dbdc-4a90-be66-9b86ac7c3a03';
@@ -36,7 +38,7 @@ BEGIN
 
     -- Question: What is the primary function o...
     q_id := '14b9c104-be6a-4cc3-996f-6b0edcb60bb1';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the primary function of a CPU?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the primary function of a CPU?', 1, 'easy');
     o_id1 := '52606d6f-d855-4374-90f9-d8e849b6143a';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Store data permanently');
     o_id2 := 'bd2a4c6d-3ccb-469a-940d-a4fe4e04bd74';
@@ -49,7 +51,7 @@ BEGIN
 
     -- Question: In Python, how do you define a...
     q_id := 'c5e0ac27-e1fd-4e81-9cf4-ffcf99d555ea';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In Python, how do you define a function?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In Python, how do you define a function?', 1, 'easy');
     o_id1 := 'd8402671-e3f4-4178-8f82-5b11a0e5b101';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'function myFunc()');
     o_id2 := '89f15a7a-b613-4f14-ab26-f48430f6f9d7';
@@ -62,7 +64,7 @@ BEGIN
 
     -- Question: What does CSS stand for?...
     q_id := '2a60d5f3-1695-40a4-ad5a-6c1ee861d7b6';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does CSS stand for?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does CSS stand for?', 1, 'easy');
     o_id1 := '3c4dd795-39ca-40da-8b6a-0ae2b5b0817a';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Computer Style Sheets');
     o_id2 := '99182d28-bdf4-4a92-a6a0-2c5e23021b7a';
@@ -75,7 +77,7 @@ BEGIN
 
     -- Question: Which symbol is used for comme...
     q_id := '5ff8e00a-d017-4da5-a7f7-e029a90ed72e';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which symbol is used for comments in Python?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which symbol is used for comments in Python?', 1, 'easy');
     o_id1 := 'f847030c-c760-4902-9b19-069d0ff49655';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, '//');
     o_id2 := 'c387ae66-e3e9-4159-bb03-eb60ad41c131';
@@ -88,7 +90,7 @@ BEGIN
 
     -- Question: What is the correct way to out...
     q_id := 'ec9754bd-935f-4f46-bd37-c2d699447dc9';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the correct way to output ''Hello World'' in Java?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the correct way to output ''Hello World'' in Java?', 1, 'easy');
     o_id1 := '79613dd9-bda2-41cb-bbc5-e4f96a5484c0';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'System.out.println(''Hello World'');');
     o_id2 := 'd9af98ff-ace9-46f1-97df-6742951d1547';
@@ -101,7 +103,7 @@ BEGIN
 
     -- Question: Which data type is used to sto...
     q_id := 'd6b370aa-f0b2-4614-8507-dbdf8c6c11db';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which data type is used to store text in most languages?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which data type is used to store text in most languages?', 1, 'easy');
     o_id1 := '25a33cb8-8ba0-459c-af13-6863400bc5d4';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'String');
     o_id2 := '835697f7-4d7b-49d9-8b04-0cf19cbe6da7';
@@ -114,7 +116,7 @@ BEGIN
 
     -- Question: What is the time complexity of...
     q_id := 'd3b1869c-3e90-4590-96bc-05d7783dba99';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the time complexity of accessing an element in an array by index?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the time complexity of accessing an element in an array by index?', 1, 'easy');
     o_id1 := '3739894d-e0e6-4f38-8ded-d0c0c7309c8f';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'O(1)');
     o_id2 := 'b9c0431e-d16a-405c-8b4b-47ec2238fb99';
@@ -127,7 +129,7 @@ BEGIN
 
     -- Question: What does SQL stand for?...
     q_id := '72578ab3-e512-453b-81da-4e6445b17e94';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does SQL stand for?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does SQL stand for?', 1, 'easy');
     o_id1 := '03ef1f9d-37c8-4f6e-9afe-c8d1269539c7';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Structured Question Language');
     o_id2 := '24753d90-04fc-4920-a05b-910461d3d7bf';
@@ -140,7 +142,7 @@ BEGIN
 
     -- Question: Which of the following is an e...
     q_id := 'e42ea64e-12fd-40ef-9877-af152bd9bece';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which of the following is an example of an operating system?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which of the following is an example of an operating system?', 1, 'easy');
     o_id1 := 'bb4ee5aa-0feb-4834-a0bf-3cc4cf29293b';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Google Chrome');
     o_id2 := '6ddace49-9c23-4243-9dca-60763ae46bd0';
@@ -153,7 +155,7 @@ BEGIN
 
     -- Question: What does ''HTTP'' stand for?...
     q_id := 'e100b304-5102-4ea3-8a00-865946d47029';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does ''HTTP'' stand for?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does ''HTTP'' stand for?', 1, 'easy');
     o_id1 := '0a9a0622-921d-4a93-aa92-b206d59e1570';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'HyperText Transfer Protocol');
     o_id2 := '1db97cea-d369-4642-ac67-61d4320f9b83';
@@ -166,7 +168,7 @@ BEGIN
 
     -- Question: In JavaScript, which keyword i...
     q_id := '8301944f-76e6-4894-9742-f3d90d169ac0';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In JavaScript, which keyword is used to declare a variable that cannot be reassigned?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In JavaScript, which keyword is used to declare a variable that cannot be reassigned?', 1, 'easy');
     o_id1 := '9aee3ae1-c6f1-47ea-bd45-61cdc7a6b89d';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'var');
     o_id2 := '988e53d8-c6da-4fa5-956e-8c7696214405';
@@ -179,7 +181,7 @@ BEGIN
 
     -- Question: What is a ''boolean''?...
     q_id := '19a7da8b-5fc0-4136-9281-1052e2a5abdc';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is a ''boolean''?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is a ''boolean''?', 1, 'easy');
     o_id1 := '00222400-26ea-40c8-9930-10bf564ff841';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'A data type that can only be true or false');
     o_id2 := 'd17a0148-7849-4f83-82d6-588377db9d00';
@@ -192,7 +194,7 @@ BEGIN
 
     -- Question: Which tag is used to create a ...
     q_id := '4953fd24-59d1-437a-b53b-6193008cc8c6';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which tag is used to create a hyperlink in HTML?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which tag is used to create a hyperlink in HTML?', 1, 'easy');
     o_id1 := '3b130dc0-f809-4b21-9d51-4d98cb5749e1';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, '<link>');
     o_id2 := 'f6f8aae1-4936-4ad2-9257-5bb4eb5e78ee';
@@ -205,7 +207,7 @@ BEGIN
 
     -- Question: What is the result of 3 + ''3'...
     q_id := '1de3af8b-c093-48c2-8151-e909202052bc';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the result of 3 + ''3'' in JavaScript?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the result of 3 + ''3'' in JavaScript?', 1, 'easy');
     o_id1 := '77c019ab-bd6b-4942-9a76-7c60b345a60b';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, '6');
     o_id2 := 'e3327eda-3326-47c0-a259-67d65217481a';
@@ -218,7 +220,7 @@ BEGIN
 
     -- Question: Which extension is commonly us...
     q_id := '64ad5608-494f-4313-87e8-8a9b254d6331';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which extension is commonly used for a JavaScript file?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which extension is commonly used for a JavaScript file?', 1, 'easy');
     o_id1 := 'ab9c70b9-2079-4b64-b36f-98e1d25dcbea';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, '.java');
     o_id2 := '910951c6-b5a7-4e14-92e3-27ce930f4340';
@@ -231,7 +233,7 @@ BEGIN
 
     -- Question: What is Git?...
     q_id := '62fb7779-cdb8-4a8c-9f44-a6ae9084ec66';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is Git?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is Git?', 1, 'easy');
     o_id1 := '45e29c50-0041-4dcd-9491-2d2640fab1a6';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'A programming language');
     o_id2 := '24abfa12-0087-4960-a284-fb097f2c12e1';
@@ -244,7 +246,7 @@ BEGIN
 
     -- Question: What does API stand for?...
     q_id := 'e8172730-ad60-4f7f-b404-e16b211fe751';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does API stand for?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does API stand for?', 1, 'easy');
     o_id1 := '550604be-4ede-431d-ad27-44ee40e007d6';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Application Programming Interface');
     o_id2 := 'ebd9d4ae-149e-40c6-84c2-4affb0fcbe7b';
@@ -257,7 +259,7 @@ BEGIN
 
     -- Question: Which language is primarily us...
     q_id := '7087db78-b7ed-483e-9760-3872ee41fd37';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which language is primarily used for Android app development natively?', 1, 'easy');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which language is primarily used for Android app development natively?', 1, 'easy');
     o_id1 := '629aedf6-4534-47da-8097-dcc9686db0f6';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Swift');
     o_id2 := '231e0169-2e20-4169-8870-321108e99512';
@@ -270,7 +272,7 @@ BEGIN
 
     -- Question: What is a closure in JavaScrip...
     q_id := '6201e7d7-bc71-4d31-ad77-618dd63b415c';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is a closure in JavaScript?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is a closure in JavaScript?', 1, 'medium');
     o_id1 := 'ab88d46a-e8f7-4fc9-bbfe-4c61794e88df';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'A loop that never ends');
     o_id2 := '47eab9b4-4b24-4d51-8193-804041ca5646';
@@ -283,7 +285,7 @@ BEGIN
 
     -- Question: Which of these is a NoSQL data...
     q_id := '98c8b0fc-e27e-47d3-85d6-6a0701ebaef8';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which of these is a NoSQL database?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which of these is a NoSQL database?', 1, 'medium');
     o_id1 := 'b7ad7d84-c9af-4f94-885c-4d859e40bd26';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'PostgreSQL');
     o_id2 := 'a34ea8a6-1cdd-412b-9775-d21c809f4fc1';
@@ -296,7 +298,7 @@ BEGIN
 
     -- Question: In Git, what is the command to...
     q_id := '8e0f5b3b-1fc0-4920-8b69-3b9eae7ca3ef';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In Git, what is the command to create a new branch and switch to it?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In Git, what is the command to create a new branch and switch to it?', 1, 'medium');
     o_id1 := '1a204752-056f-4645-934a-8b3ef1c9a102';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'git branch -m');
     o_id2 := 'cf6d049b-bcce-456f-a2e1-e6e9c551bec9';
@@ -309,7 +311,7 @@ BEGIN
 
     -- Question: What is the primary difference...
     q_id := '6fd49f37-1f3e-48fc-8f67-509ab2b8cc28';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the primary difference between a process and a thread?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the primary difference between a process and a thread?', 1, 'medium');
     o_id1 := '1b139f33-e601-4f81-b667-a1c09d13fe3c';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Threads share memory, processes do not');
     o_id2 := '5492c20c-d314-4332-9e35-9717fd644eee';
@@ -322,7 +324,7 @@ BEGIN
 
     -- Question: What does the ''static'' keywo...
     q_id := '2c22d56e-0df8-49a1-a21e-6075462515d6';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does the ''static'' keyword mean in Java?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does the ''static'' keyword mean in Java?', 1, 'medium');
     o_id1 := '71df47a8-b594-4a74-9048-83b5a869c59a';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'The variable cannot be changed');
     o_id2 := 'f62d0a48-c3d9-4a80-bb75-53f82165208b';
@@ -335,7 +337,7 @@ BEGIN
 
     -- Question: Which HTTP method is typically...
     q_id := 'f739a9e8-941b-4f22-bf10-a1e6dc5c0cbf';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which HTTP method is typically used to update an existing resource completely?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which HTTP method is typically used to update an existing resource completely?', 1, 'medium');
     o_id1 := '2323ff9d-7d98-4930-83b6-f0392127e55e';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'POST');
     o_id2 := 'db9d4a4d-331e-4eae-8002-4e4a89dd44d3';
@@ -348,7 +350,7 @@ BEGIN
 
     -- Question: What is the time complexity of...
     q_id := '4a775ea9-38d9-4b46-ab97-758cfaa2575d';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the time complexity of searching in a balanced Binary Search Tree?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the time complexity of searching in a balanced Binary Search Tree?', 1, 'medium');
     o_id1 := 'a93d9a46-cca7-4075-a930-3be1f54d442b';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'O(1)');
     o_id2 := '323406cc-f722-43f7-9094-027ba65e78c5';
@@ -361,7 +363,7 @@ BEGIN
 
     -- Question: What is ''polymorphism'' in OO...
     q_id := 'de550ee0-df05-4078-8d12-5a4bc4855b91';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is ''polymorphism'' in OOP?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is ''polymorphism'' in OOP?', 1, 'medium');
     o_id1 := 'f5b7f68c-b72b-4c77-8e9e-ec31215dc3bc';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Hiding internal state of an object');
     o_id2 := 'f3b9f2f9-d11a-4031-b6b7-2523615c9edd';
@@ -374,7 +376,7 @@ BEGIN
 
     -- Question: In React, what hook is used to...
     q_id := '1550332b-2292-443d-82ac-f0648c42f338';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In React, what hook is used to handle side effects?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In React, what hook is used to handle side effects?', 1, 'medium');
     o_id1 := 'c6f20d81-4d08-4c18-9ad8-39d6dd2665bc';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'useState');
     o_id2 := '44c12d68-dac4-4ec9-ba25-c19ac4728647';
@@ -387,7 +389,7 @@ BEGIN
 
     -- Question: What is a REST API?...
     q_id := 'cf326969-d507-4cd3-97ca-c28aaf04a0fa';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is a REST API?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is a REST API?', 1, 'medium');
     o_id1 := '2557f857-710d-449a-aef2-dfa31fc11d31';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'An API that requires the server to sleep between requests');
     o_id2 := '0b04ba37-4964-4ee8-9c3f-83b7723b3cfb';
@@ -400,7 +402,7 @@ BEGIN
 
     -- Question: What is ''Docker'' primarily u...
     q_id := 'bfc01d8c-90a7-4caa-94af-7201f810cf22';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is ''Docker'' primarily used for?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is ''Docker'' primarily used for?', 1, 'medium');
     o_id1 := 'b1555f12-8e50-451f-8fe1-d7f04e9a8342';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Writing code');
     o_id2 := '53c16d59-d95d-4bd2-9188-725d32cfa597';
@@ -413,7 +415,7 @@ BEGIN
 
     -- Question: What does ACID stand for in th...
     q_id := '23d98aae-c345-480a-91e0-8efdb92f4a2f';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does ACID stand for in the context of databases?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does ACID stand for in the context of databases?', 1, 'medium');
     o_id1 := '9cc0fff5-45f6-480b-b9fa-ac92540cc6ee';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Atomicity, Consistency, Isolation, Durability');
     o_id2 := 'd6492cbf-763f-4793-b56e-4371ee224fb2';
@@ -426,7 +428,7 @@ BEGIN
 
     -- Question: Which sorting algorithm has th...
     q_id := 'a75d2049-fd03-4562-9b5b-9a15d05329a6';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which sorting algorithm has the best average-case time complexity?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which sorting algorithm has the best average-case time complexity?', 1, 'medium');
     o_id1 := '6d9fe85e-3a8c-4114-b3a2-5b087169c73d';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Bubble Sort');
     o_id2 := '143be28c-d940-4fc0-b15e-cf7a2ee1b075';
@@ -439,7 +441,7 @@ BEGIN
 
     -- Question: What is ''middleware'' in a we...
     q_id := '269b0109-ddfa-435f-b966-5c57dbf0031f';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is ''middleware'' in a web framework like Express?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is ''middleware'' in a web framework like Express?', 1, 'medium');
     o_id1 := '6d963095-8dc5-40a8-a2d1-10b4ba1d5fce';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'The physical server hardware');
     o_id2 := '417a200f-f472-4c34-aced-cc29afa590e7';
@@ -452,7 +454,7 @@ BEGIN
 
     -- Question: What is the purpose of ''JWT''...
     q_id := '19bbcd52-fc4e-4f4d-95a1-8eb79dfd6037';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the purpose of ''JWT''?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the purpose of ''JWT''?', 1, 'medium');
     o_id1 := 'b0f1e074-d709-4132-acda-d9ef9395efd0';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Styling web pages');
     o_id2 := 'd24a14e7-32d5-4028-8862-6b891e16f73a';
@@ -465,7 +467,7 @@ BEGIN
 
     -- Question: Which data structure operates ...
     q_id := 'd0ff2ed9-088c-40ea-be64-d1bbc9cb19b3';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which data structure operates on a Last In, First Out (LIFO) principle?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which data structure operates on a Last In, First Out (LIFO) principle?', 1, 'medium');
     o_id1 := '9d25ca86-07e7-4a23-8cc6-3272b82f32b1';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Queue');
     o_id2 := '11da819a-8f14-416a-ba20-31472b3de940';
@@ -478,7 +480,7 @@ BEGIN
 
     -- Question: In SQL, what is the difference...
     q_id := 'a30e55f0-e213-4328-ba47-1624800aac7d';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In SQL, what is the difference between INNER JOIN and LEFT JOIN?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In SQL, what is the difference between INNER JOIN and LEFT JOIN?', 1, 'medium');
     o_id1 := 'b2cb851e-c40d-4b69-9da4-2ab8c583da65';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'INNER JOIN returns all rows, LEFT JOIN returns matched rows');
     o_id2 := '0191ee32-9cc7-43bc-a1c2-d4052ac1510b';
@@ -491,7 +493,7 @@ BEGIN
 
     -- Question: What does MVC stand for?...
     q_id := 'f839d657-0a52-409c-802a-a7b75ea2f7b7';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does MVC stand for?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does MVC stand for?', 1, 'medium');
     o_id1 := 'dc89541d-3759-4816-bc8e-08b6437bfd0c';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Model View Controller');
     o_id2 := 'fdc605d1-164d-4b86-94fd-432fc4efeab4';
@@ -504,7 +506,7 @@ BEGIN
 
     -- Question: What is ''Debouncing'' in Java...
     q_id := '6f365974-2f4b-4eca-9fa0-ff22e9567494';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is ''Debouncing'' in JavaScript?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is ''Debouncing'' in JavaScript?', 1, 'medium');
     o_id1 := 'ea56199e-faa8-4d45-a494-647d03f7d011';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Bouncing elements in CSS');
     o_id2 := 'd85e1219-a1fb-496b-9295-7e4a77f6f975';
@@ -517,7 +519,7 @@ BEGIN
 
     -- Question: What is the primary use of a '...
     q_id := '94fda67e-68f5-4b12-87c1-93a119d6070e';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the primary use of a ''foreign key'' in a relational database?', 1, 'medium');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the primary use of a ''foreign key'' in a relational database?', 1, 'medium');
     o_id1 := 'e9d97913-eb0b-40c6-b1a4-84284589c3bd';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'To encrypt data');
     o_id2 := '9f1a5897-2be9-461c-b67b-f2daa3d580fb';
@@ -530,7 +532,7 @@ BEGIN
 
     -- Question: What is the time complexity of...
     q_id := '8cd326de-ef9f-48f7-b955-45288b383180';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the time complexity of the quicksort algorithm in the worst-case scenario?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the time complexity of the quicksort algorithm in the worst-case scenario?', 1, 'hard');
     o_id1 := 'b49e6ba1-cd1f-4385-b99a-30b0d0f68892';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'O(n log n)');
     o_id2 := 'da4655c2-5259-4663-923b-79fcdbdc10f2';
@@ -543,7 +545,7 @@ BEGIN
 
     -- Question: In the CAP theorem, what does ...
     q_id := '986709e8-15be-40f2-a98e-11d0dfba031c';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In the CAP theorem, what does the ''P'' stand for?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In the CAP theorem, what does the ''P'' stand for?', 1, 'hard');
     o_id1 := '5fd67a31-1607-41f6-98e9-f30f5f903759';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Performance');
     o_id2 := 'f8aff474-b28a-4504-9acd-e437ff1103b8';
@@ -556,7 +558,7 @@ BEGIN
 
     -- Question: What is ''Eventual Consistency...
     q_id := '17dae5b9-4c09-4e59-af9c-cc295fae74b9';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is ''Eventual Consistency''?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is ''Eventual Consistency''?', 1, 'hard');
     o_id1 := '2d5af608-bd2a-4579-b481-ef9714db5934';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Data will be consistent immediately after a write');
     o_id2 := 'efef0863-1a65-423c-89ef-2a95e6025acf';
@@ -569,7 +571,7 @@ BEGIN
 
     -- Question: What is a ''Race Condition''?...
     q_id := 'd046541d-5b3f-4f59-ad43-9542a796bbf7';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is a ''Race Condition''?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is a ''Race Condition''?', 1, 'hard');
     o_id1 := '4c5ea7a0-4d52-4fc5-85d9-e3906da993ab';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'A competition between two servers');
     o_id2 := '9a1b560c-776b-4225-8749-429f2170dc90';
@@ -582,7 +584,7 @@ BEGIN
 
     -- Question: In operating systems, what is ...
     q_id := '7fb5eb7f-5fa7-4197-afd0-f99594d6046f';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In operating systems, what is ''Deadlock''?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In operating systems, what is ''Deadlock''?', 1, 'hard');
     o_id1 := '213b7ed8-6134-44f2-b9b1-a4a7f1e2adc7';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'When the OS shuts down');
     o_id2 := '292436c6-d334-4593-94c4-f6e886281e6d';
@@ -595,7 +597,7 @@ BEGIN
 
     -- Question: What is the primary advantage ...
     q_id := '53e0504e-d67b-4c80-a8f6-a3d911ad6f4c';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the primary advantage of a Bloom Filter?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the primary advantage of a Bloom Filter?', 1, 'hard');
     o_id1 := 'c21577db-621c-45db-b1b4-d84dbd48827d';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'It perfectly sorts data in O(1) time');
     o_id2 := '5d95b281-6548-4140-abe4-ec32a131828f';
@@ -608,7 +610,7 @@ BEGIN
 
     -- Question: What does ''Idempotence'' mean...
     q_id := '0190f84a-4542-41d5-8dcb-2f7e64d911e2';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does ''Idempotence'' mean in the context of an API?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does ''Idempotence'' mean in the context of an API?', 1, 'hard');
     o_id1 := '3f3b86e5-2d39-4f48-a4df-898ae3fda7b3';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'The API is completely secure');
     o_id2 := 'e4a0c9ab-14a2-44c1-bdda-e6aad92ae52f';
@@ -621,7 +623,7 @@ BEGIN
 
     -- Question: Which algorithmic paradigm doe...
     q_id := 'a79ad301-d908-420e-98a8-871613f7317b';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'Which algorithmic paradigm does Dijkstra''s algorithm for finding the shortest path use?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'Which algorithmic paradigm does Dijkstra''s algorithm for finding the shortest path use?', 1, 'hard');
     o_id1 := '994b4dc5-1d5b-4762-ac35-258b61f74896';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Divide and Conquer');
     o_id2 := '41e1ca96-63ef-475f-9898-4508cc8e844d';
@@ -634,7 +636,7 @@ BEGIN
 
     -- Question: What is the difference between...
     q_id := 'f11d3069-eca1-42a8-9937-a81e8c9f7e8c';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the difference between a Mutex and a Semaphore?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the difference between a Mutex and a Semaphore?', 1, 'hard');
     o_id1 := 'e21d5e9e-bce9-4b66-8936-94a86f261122';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'There is no difference');
     o_id2 := '661e268d-a6ec-4607-9a3f-626fda856942';
@@ -647,7 +649,7 @@ BEGIN
 
     -- Question: In cryptography, what is an ''...
     q_id := '16735076-0ea4-4175-909a-8b90a4d1d8cf';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In cryptography, what is an ''Avalanche Effect''?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In cryptography, what is an ''Avalanche Effect''?', 1, 'hard');
     o_id1 := 'ead2dd6f-d59f-4d27-8429-7764e8c67c38';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'When encryption keys are stolen in bulk');
     o_id2 := 'f5023c6f-cb06-41eb-b970-ec018710df25';
@@ -660,7 +662,7 @@ BEGIN
 
     -- Question: What is a ''Trie'' data struct...
     q_id := 'bb4cd0ba-8595-46c3-81d2-1433373c8cad';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is a ''Trie'' data structure primarily used for?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is a ''Trie'' data structure primarily used for?', 1, 'hard');
     o_id1 := 'fe62fd71-9e28-40b2-bde6-b5607107d47f';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Sorting numbers');
     o_id2 := '2cc91f20-0571-4f3b-92b8-b806c099c9b0';
@@ -673,7 +675,7 @@ BEGIN
 
     -- Question: In functional programming, wha...
     q_id := '6c23f252-6719-412c-88cf-9864b268770d';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In functional programming, what characterizes a ''pure function''?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In functional programming, what characterizes a ''pure function''?', 1, 'hard');
     o_id1 := '6f9be67f-c9b2-4c95-a97e-e5e9a4c86e3d';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'It has no side effects and returns the same output for the same input');
     o_id2 := '6b62f491-81a8-47b8-a0c5-76c306bb4bed';
@@ -686,7 +688,7 @@ BEGIN
 
     -- Question: What is ''B-Tree'' primarily o...
     q_id := '15391003-1918-4122-921b-534e5c05abfd';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is ''B-Tree'' primarily optimized for?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is ''B-Tree'' primarily optimized for?', 1, 'hard');
     o_id1 := '5b8c8fa8-5142-4a9a-99b7-640ad8b22437';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'In-memory searching');
     o_id2 := '09780443-9f94-4e86-8d54-574d4ac8a89b';
@@ -699,7 +701,7 @@ BEGIN
 
     -- Question: What is the purpose of ''Rever...
     q_id := '574cb747-b5cc-4591-944b-eb8cbd153bfb';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the purpose of ''Reverse Proxy''?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the purpose of ''Reverse Proxy''?', 1, 'hard');
     o_id1 := '372020aa-0a82-4d19-9995-9d7e182abdf2';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'To hide the client''s IP from the internet');
     o_id2 := '120b9d42-ffd6-46da-acc6-3c0e0617056a';
@@ -712,7 +714,7 @@ BEGIN
 
     -- Question: In React, what does ''Hydratio...
     q_id := 'e2d1811e-0c59-4624-81c5-7c8a77855d33';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'In React, what does ''Hydration'' refer to?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'In React, what does ''Hydration'' refer to?', 1, 'hard');
     o_id1 := '1ea493f5-ad28-4517-9e2a-dcd875cf3f33';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Installing NPM packages');
     o_id2 := 'b83519e7-1d55-4765-95a3-2af383757016';
@@ -725,7 +727,7 @@ BEGIN
 
     -- Question: What is a ''Memory Leak'' in a...
     q_id := 'a6e50cab-d903-451c-a9f2-381c58442f85';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is a ''Memory Leak'' in a garbage-collected language like JavaScript?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is a ''Memory Leak'' in a garbage-collected language like JavaScript?', 1, 'hard');
     o_id1 := '09d854d3-5db8-4ba4-8dbc-a22303f7f038';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'When RAM physically breaks');
     o_id2 := 'b1198519-1dbb-47d7-ae92-1805167434dc';
@@ -738,7 +740,7 @@ BEGIN
 
     -- Question: What does the ''Two-Phase Comm...
     q_id := '192319f2-55b1-4333-a079-b946726a10dc';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What does the ''Two-Phase Commit'' protocol ensure?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What does the ''Two-Phase Commit'' protocol ensure?', 1, 'hard');
     o_id1 := 'f01cae74-5e53-4bd0-98b1-343f521ade14';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Faster database reads');
     o_id2 := '3aab0669-8978-4d52-a8d7-96088e9edbea';
@@ -751,7 +753,7 @@ BEGIN
 
     -- Question: What is a ''Dangling Pointer''...
     q_id := '012f120f-91f3-432a-b2bc-ea33dea48369';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is a ''Dangling Pointer'' in C/C++?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is a ''Dangling Pointer'' in C/C++?', 1, 'hard');
     o_id1 := 'b6165f43-2a8f-4e67-8e7f-514cb3ae35cc';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'A pointer that points to a memory location that has been freed or deleted');
     o_id2 := 'd9590761-32f3-4def-ad47-ea0e7702608f';
@@ -764,7 +766,7 @@ BEGIN
 
     -- Question: What is the primary difference...
     q_id := '5ecae069-6d02-44a3-bd75-fc4e2e1fd670';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is the primary difference between TCP and UDP?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is the primary difference between TCP and UDP?', 1, 'hard');
     o_id1 := '280f8dfa-0ea3-4609-9541-d3ecbede0c66';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'UDP is connection-oriented, TCP is connectionless');
     o_id2 := '71696dae-18d2-4b95-89e4-733c0006aac0';
@@ -777,7 +779,7 @@ BEGIN
 
     -- Question: What is ''Tail Call Optimizati...
     q_id := '0b40d7fb-9b2b-4297-bdda-c1b6bdb9ff8e';
-    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, '8ca699d1-3fb3-469b-8e12-cb40d58f335b', 'What is ''Tail Call Optimization''?', 1, 'hard');
+    INSERT INTO quiz_questions (id, quiz_id, question_text, marks, difficulty) VALUES (q_id, v_quiz_id, 'What is ''Tail Call Optimization''?', 1, 'hard');
     o_id1 := 'c7c27f3f-7dc3-4abb-9619-dbd19d09f770';
     INSERT INTO quiz_options (id, question_id, option_text) VALUES (o_id1, q_id, 'Removing the last element of an array efficiently');
     o_id2 := '6dfe0740-7e39-44c5-b853-a404e3a45984';

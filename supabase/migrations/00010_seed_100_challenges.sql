@@ -4,6 +4,21 @@ DECLARE
     v_ai_game_id UUID;
     v_debug_game_id UUID;
 BEGIN
+
+    -- Add AI columns if they don't exist
+    BEGIN
+        ALTER TABLE ai_challenges ADD COLUMN difficulty TEXT DEFAULT 'medium' CHECK (difficulty IN ('easy', 'medium', 'hard'));
+    EXCEPTION WHEN duplicate_column THEN NULL; END;
+
+    BEGIN
+        ALTER TABLE ai_challenges ADD COLUMN time_limit_minutes INTEGER DEFAULT 5;
+    EXCEPTION WHEN duplicate_column THEN NULL; END;
+
+    -- Add Debug columns if they don't exist
+    BEGIN
+        ALTER TABLE debug_challenges ADD COLUMN difficulty TEXT DEFAULT 'medium' CHECK (difficulty IN ('easy', 'medium', 'hard'));
+    EXCEPTION WHEN duplicate_column THEN NULL; END;
+
     SELECT id INTO v_ai_game_id FROM games WHERE slug = 'ai' LIMIT 1;
     SELECT id INTO v_debug_game_id FROM games WHERE slug = 'debug' LIMIT 1;
 

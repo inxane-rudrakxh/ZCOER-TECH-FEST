@@ -159,10 +159,9 @@ const Register = () => {
           ) : successData ? (
             <div className="bg-primary-container border-[4px] border-on-surface p-8 lg:p-12 text-center shadow-[8px_8px_0px_0px_#1c1b1b] rounded-2xl">
               <span className="material-symbols-outlined text-on-surface text-6xl mb-4">check_circle</span>
-              <h1 className="font-display-hero text-headline-xl uppercase mb-6 tracking-tight">
+              <h1 className="font-display-hero text-4xl md:text-headline-xl uppercase mb-6 tracking-tight break-words">
                 REGISTRATION SUCCESSFUL
               </h1>
-              
               <div className="bg-surface-container-lowest p-6 rounded-xl border-[2px] border-on-surface mb-8">
                 <div className="text-on-surface-variant font-label-badge text-xs uppercase font-bold mb-2">YOUR PLAYER ID</div>
                 <div className="font-headline-xl text-4xl text-on-surface tracking-widest">{successData.playerId}</div>
