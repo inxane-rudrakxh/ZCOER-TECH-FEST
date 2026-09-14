@@ -25,8 +25,8 @@ const Leaderboard = () => {
             if (!aggregated[pid]) {
               aggregated[pid] = {
                 participant_id: pid,
-                full_name: entry.participants?.full_name || "Unknown Agent",
-                player_id: entry.participants?.player_id || "UNK-000",
+                full_name: (entry.participants as any)?.full_name || "Unknown Agent",
+                player_id: (entry.participants as any)?.player_id || "UNK-000",
                 total_score: 0,
                 total_time: 0,
                 games_played: 0

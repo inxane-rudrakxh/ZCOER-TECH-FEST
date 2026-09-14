@@ -1,12 +1,44 @@
 // @ts-nocheck
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("round-1");
+  const [playerCount, setPlayerCount] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const { count } = await supabase
+          .from("participants")
+          .select("*", { count: "exact", head: true });
+        
+        if (count !== null) setPlayerCount(count);
+      } catch (err) {
+        console.error("Error fetching telemetry:", err);
+      }
+    };
+
+    fetchCount();
+
+    const channel = supabase.channel('realtime-telemetry')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'participants' },
+        () => {
+          setPlayerCount(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased w-full min-h-screen">
@@ -20,13 +52,13 @@ const Home = () => {
                 <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> ENGINEERING
                 DAY 2026 <span>✦</span> AIDS &amp; AIML DEPARTMENT{" "}
                 <span>✦</span> THINK • BUILD • DEBUG • CREATE <span>✦</span>{" "}
-                HIGH OCTANE ALGORITHMIC CLASH <span>✦</span> 64 SQUADS ACTIVE
+                HIGH OCTANE ALGORITHMIC CLASH <span>✦</span> {playerCount} SQUADS ACTIVE
               </span>
               <span className="mx-6 flex items-center gap-4">
                 <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> ENGINEERING
                 DAY 2026 <span>✦</span> AIDS &amp; AIML DEPARTMENT{" "}
                 <span>✦</span> THINK • BUILD • DEBUG • CREATE <span>✦</span>{" "}
-                HIGH OCTANE ALGORITHMIC CLASH <span>✦</span> 64 SQUADS ACTIVE
+                HIGH OCTANE ALGORITHMIC CLASH <span>✦</span> {playerCount} SQUADS ACTIVE
               </span>
             </div>
           </div>
@@ -198,7 +230,7 @@ const Home = () => {
                       </p>
                       <p className="text-surface-bright">
                         <span className="text-secondary-fixed">&gt;&gt;</span>{" "}
-                        status: 428 players waiting in lobby
+                        status: {playerCount} players waiting in lobby
                       </p>
                       <p className="text-secondary-fixed-dim">
                         <span className="text-secondary-fixed">&gt;&gt;</span>{" "}

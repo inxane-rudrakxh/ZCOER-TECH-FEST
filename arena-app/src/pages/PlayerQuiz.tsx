@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -113,7 +113,7 @@ const PlayerQuiz = () => {
       }
 
       // Insert attempt
-      const { data: attemptData, error: attemptError } = await supabase.from("quiz_attempts").upsert({
+      const { error: attemptError } = await supabase.from("quiz_attempts").upsert({
         quiz_id: quiz.id,
         participant_id: participant.id,
         score: calculatedScore,

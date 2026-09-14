@@ -8,6 +8,8 @@ const PlayerDashboard = () => {
   
   const [participant, setParticipant] = useState<any>(null);
   const [games, setGames] = useState<any[]>([]);
+  const [scores, setScores] = useState<any[]>([]);
+  const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +48,37 @@ const PlayerDashboard = () => {
           if (gData) {
             setGames(gData);
           }
+
+          // Fetch scores and submissions to show feedback
+          const { data: scoreData } = await supabase
+            .from("scores")
+            .select("game_id, score")
+            .eq("participant_id", pData.id);
+          
+          if (scoreData) setScores(scoreData);
+
+          const { data: debugSubs } = await supabase.from("debug_submissions").select("challenge_id(game_id)").eq("participant_id", pData.id);
+          const { data: aiSubs } = await supabase.from("ai_submissions").select("challenge_id(game_id)").eq("participant_id", pData.id);
+          
+          const subs: any[] = [];
+          if (debugSubs) debugSubs.forEach((s: any) => { if (s.challenge_id?.game_id) subs.push({ game_id: s.challenge_id.game_id }) });
+          if (aiSubs) aiSubs.forEach((s: any) => { if (s.challenge_id?.game_id) subs.push({ game_id: s.challenge_id.game_id }) });
+          setSubmissions(subs);
+
+          // Realtime Subscription
+          const channel = supabase.channel('realtime-games')
+            .on(
+              'postgres_changes',
+              { event: 'UPDATE', schema: 'public', table: 'games' },
+              (payload) => {
+                setGames((prevGames) =>
+                  prevGames.map((g) => (g.id === payload.new.id ? { ...g, ...payload.new } : g))
+                );
+              }
+            )
+            .subscribe();
+
+          (window as any).dashboardChannel = channel;
         }
       } catch (err: any) {
         setError(err.message);
@@ -55,6 +88,13 @@ const PlayerDashboard = () => {
     };
 
     fetchDashboard();
+
+    return () => {
+      if ((window as any).dashboardChannel) {
+        supabase.removeChannel((window as any).dashboardChannel);
+        (window as any).dashboardChannel = null;
+      }
+    };
   }, [playerToken]);
 
   const getGameNumberText = (slug: string) => {
@@ -153,6 +193,12 @@ const PlayerDashboard = () => {
                 const status = getStatusDisplay(game.status);
                 const isLive = game.status === 'LIVE';
 
+                const scoreEntry = scores.find(s => s.game_id === game.id);
+                const isSubmitted = scoreEntry || submissions.find(s => s.game_id === game.id);
+                
+                const displayScore = scoreEntry ? `SCORE: ${scoreEntry.score}` : isSubmitted ? "WAITING FOR EVALUATION" : "WAITING FOR ADMIN...";
+                const showCompleted = !!isSubmitted || game.status === 'COMPLETED';
+
                 return (
                   <div key={game.id} className="bg-surface-container-lowest border-[3px] border-on-surface shadow-[6px_6px_0px_0px_#1c1b1b] p-6 flex flex-col md:flex-row gap-6 justify-between">
                     <div className="flex flex-col gap-3">
@@ -185,9 +231,9 @@ const PlayerDashboard = () => {
                       ) : (
                         <div className="w-full py-4 bg-surface-container-highest text-on-surface-variant font-headline-md text-[14px] uppercase tracking-wider border-[3px] border-on-surface/50 text-center flex items-center justify-center gap-2">
                           <span className="material-symbols-outlined text-[18px]">
-                            {game.status === 'COMPLETED' ? 'emoji_events' : 'lock_clock'}
+                            {showCompleted ? 'emoji_events' : 'lock_clock'}
                           </span>
-                          {game.status === 'COMPLETED' ? 'SCORE: VIEW LEADERBOARD' : 'WAITING FOR ADMIN...'}
+                          {showCompleted ? displayScore : 'WAITING FOR ADMIN...'}
                         </div>
                       )}
                     </div>
