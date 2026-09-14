@@ -51,43 +51,18 @@ const Header = () => {
             </span>
           </div>
         </div>
-        <nav
-          className="hidden lg:flex items-center gap-2 p-1.5 bg-surface-container border-[3px] border-on-surface rounded-xl shadow-[3px_3px_0px_0px_#1c1b1b]"
-          data-active-classes="bg-primary-container text-on-surface font-bold border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] rounded-xl"
-        >
-          <Link
-            className={getLinkClass("/")}
-            to="/"
+        <div className="flex items-center gap-3 shrink-0 ml-auto">
+          <nav
+            className="hidden lg:flex items-center gap-2 p-1.5 bg-surface-container border-[3px] border-on-surface rounded-xl shadow-[3px_3px_0px_0px_#1c1b1b]"
+            data-active-classes="bg-primary-container text-on-surface font-bold border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] rounded-xl"
           >
-            Home
-          </Link>
-          <Link
-            className={getLinkClass("/games")}
-            to="/games"
-          >
-            Arena Stage Flow
-          </Link>
-          <Link
-            className={getLinkClass("/leaderboard")}
-            to="/leaderboard"
-          >
-            Live Leaderboard
-          </Link>
-          <Link
-            className={getLinkClass("/rules")}
-            to="/rules"
-          >
-            Rules
-          </Link>
-
-          <Link
-            className={getLinkClass("/admin")}
-            to="/admin"
-          >
-            Admin
-          </Link>
-        </nav>
-        <div className="flex items-center gap-3 shrink-0">
+            <Link className={getLinkClass("/")} to="/">Home</Link>
+            <Link className={getLinkClass("/games")} to="/games">Arena Stage Flow</Link>
+            <Link className={getLinkClass("/leaderboard")} to="/leaderboard">Live Leaderboard</Link>
+            <Link className={getLinkClass("/rules")} to="/rules">Rules</Link>
+            <Link className={getLinkClass("/admin")} to="/admin">Admin</Link>
+          </nav>
+          
           <Link
             to="/leaderboard"
             className="flex lg:hidden w-8 h-8 rounded-full bg-secondary items-center justify-center border-2 border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b]"
@@ -97,7 +72,6 @@ const Header = () => {
               leaderboard
             </span>
           </Link>
-
         </div>
       </div>
     </header>
