@@ -15,6 +15,7 @@ const PlayerDebug = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [cheated, setCheated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [timeLeft, setTimeLeft] = useState(0);
@@ -77,7 +78,51 @@ const PlayerDebug = () => {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, submitted, loading, error, code]); // added code to dependencies so auto-submit gets latest code
+  }, [timeLeft, submitted, loading, error, code, cheated]);
+
+  useEffect(() => {
+    if (submitted || cheated || loading || error || !challenge || !participant) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setCheated(true);
+        handleCheatSubmit();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleVisibilityChange);
+    };
+  }, [submitted, cheated, loading, error, challenge, participant]);
+
+  const handleCheatSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const { data: existing } = await supabase.from("debug_submissions").select("id").eq("challenge_id", challenge.id).eq("participant_id", participant.id).single();
+      if (existing) {
+        await supabase.from("debug_submissions").update({ score: 0, status: 'GRADED' }).eq("id", existing.id);
+      } else {
+        await supabase.from("debug_submissions").insert({ challenge_id: challenge.id, participant_id: participant.id, submitted_code: 'CHEATED_NO_CODE', score: 0, status: 'GRADED' });
+      }
+
+      await supabase.from("scores").upsert({
+        participant_id: participant.id,
+        game_id: challenge.game_id,
+        score: 0,
+        time_taken_seconds: challenge.time_limit_minutes * 60
+      }, { onConflict: 'participant_id, game_id' });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSubmitted(true);
+      setSubmitting(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (submitted || submitting) return;
@@ -132,13 +177,26 @@ if (passed === testCases.length) {
       }
 
       // 3. Save Submission
-      const { error: attemptError } = await supabase.from("debug_submissions").upsert({
-        challenge_id: challenge.id,
-        participant_id: participant.id,
-        submitted_code: code,
-        score: score,
-        status: 'GRADED'
-      }, { onConflict: 'challenge_id, participant_id' });
+      const { data: existingSub } = await supabase.from("debug_submissions").select("id").eq("challenge_id", challenge.id).eq("participant_id", participant.id).single();
+      
+      let attemptError = null;
+      if (existingSub) {
+        const { error } = await supabase.from("debug_submissions").update({
+          submitted_code: code,
+          score: score,
+          status: 'GRADED'
+        }).eq("id", existingSub.id);
+        attemptError = error;
+      } else {
+        const { error } = await supabase.from("debug_submissions").insert({
+          challenge_id: challenge.id,
+          participant_id: participant.id,
+          submitted_code: code,
+          score: score,
+          status: 'GRADED'
+        });
+        attemptError = error;
+      }
 
       if (attemptError) throw attemptError;
       
@@ -167,6 +225,21 @@ if (passed === testCases.length) {
 
   if (loading) return <div className="min-h-screen bg-surface flex items-center justify-center font-label-code">LOADING IDE...</div>;
   if (error) return <div className="min-h-screen bg-surface flex items-center justify-center font-label-code text-error">{error}</div>;
+
+  if (cheated) {
+    return (
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6">
+        <div className="bg-surface-container-lowest border-[4px] border-error p-10 text-center shadow-[8px_8px_0px_0px_#b3261e] rounded-2xl max-w-lg w-full">
+          <span className="material-symbols-outlined text-error text-6xl mb-4">gavel</span>
+          <h1 className="font-headline-xl text-error uppercase mb-2">CHEATING DETECTED</h1>
+          <p className="font-body-lg text-on-surface-variant mb-6">You left the arena during a live challenge. Your attempt has been forfeited and a score of 0 has been recorded.</p>
+          <button onClick={() => navigate(`/player/${playerToken}`)} className="bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase">
+            RETURN TO DASHBOARD
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -230,15 +303,17 @@ if (passed === testCases.length) {
           <div className="w-full lg:w-2/3 h-full flex flex-col relative bg-[#1e1e1e]">
             <Editor
               height="100%"
-              defaultLanguage={challenge.language || "javascript"}
+              defaultLanguage={challenge.language}
               theme="vs-dark"
               value={code}
-              onChange={(value) => setCode(value || "")}
+              onChange={(val) => setCode(val || "")}
               options={{
                 minimap: { enabled: false },
-                fontSize: 16,
-                fontFamily: 'monospace',
-                padding: { top: 16 }
+                fontSize: 14,
+                wordWrap: "on",
+                lineNumbersMinChars: 3,
+                folding: false,
+                scrollBeyondLastLine: false,
               }}
             />
           </div>

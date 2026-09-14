@@ -14,6 +14,7 @@ const PlayerAi = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [cheated, setCheated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [timeLeft, setTimeLeft] = useState(0);
@@ -74,7 +75,51 @@ const PlayerAi = () => {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, submitted, loading, error, prompt]);
+  }, [timeLeft, submitted, loading, error, prompt, cheated]);
+
+  useEffect(() => {
+    if (submitted || cheated || loading || error || !challenge || !participant) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setCheated(true);
+        handleCheatSubmit();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleVisibilityChange);
+    };
+  }, [submitted, cheated, loading, error, challenge, participant]);
+
+  const handleCheatSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await supabase.from("ai_submissions").upsert({
+        challenge_id: challenge.id,
+        participant_id: participant.id,
+        prompt_used: 'CHEATED_NO_PROMPT',
+        score: 0,
+        status: 'EVALUATED'
+      }, { onConflict: 'challenge_id, participant_id' });
+      await supabase.from("scores").upsert({
+        participant_id: participant.id,
+        game_id: challenge.game_id,
+        score: 0,
+        time_taken_seconds: 30 * 60
+      }, { onConflict: 'participant_id, game_id' });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSubmitted(true);
+      setSubmitting(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (submitted || submitting) return;
@@ -120,7 +165,7 @@ Return ONLY a valid JSON object in this exact format:
         participant_id: participant.id,
         prompt_used: prompt,
         score: score,
-        status: 'GRADED'
+        status: 'EVALUATED'
       }, { onConflict: 'challenge_id, participant_id' });
 
       if (attemptError) throw attemptError;
@@ -151,6 +196,21 @@ Return ONLY a valid JSON object in this exact format:
 
   if (loading) return <div className="min-h-screen bg-surface flex items-center justify-center font-label-code">LOADING AI ENGINE...</div>;
   if (error) return <div className="min-h-screen bg-surface flex items-center justify-center font-label-code text-error">{error}</div>;
+
+  if (cheated) {
+    return (
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6">
+        <div className="bg-surface-container-lowest border-[4px] border-error p-10 text-center shadow-[8px_8px_0px_0px_#b3261e] rounded-2xl max-w-lg w-full">
+          <span className="material-symbols-outlined text-error text-6xl mb-4">gavel</span>
+          <h1 className="font-headline-xl text-error uppercase mb-2">CHEATING DETECTED</h1>
+          <p className="font-body-lg text-on-surface-variant mb-6">You left the arena during a live challenge. Your attempt has been forfeited and a score of 0 has been recorded.</p>
+          <button onClick={() => navigate(`/player/${playerToken}`)} className="bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase">
+            RETURN TO DASHBOARD
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

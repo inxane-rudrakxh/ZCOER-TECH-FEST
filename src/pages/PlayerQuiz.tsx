@@ -15,6 +15,7 @@ const PlayerQuiz = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [cheated, setCheated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [timeLeft, setTimeLeft] = useState(0);
@@ -46,7 +47,7 @@ const PlayerQuiz = () => {
         setTimeLeft(quizData.duration_minutes * 60);
 
         // Fetch questions and options
-        const { data: qData } = await supabase.from("quiz_questions").select("*, quiz_options(*)").eq("quiz_id", quizData.id);
+        const { data: qData } = await supabase.from("quiz_questions").select("*, quiz_options!quiz_options_question_id_fkey(*)").eq("quiz_id", quizData.id);
         if (qData) {
           // Shuffle questions
           const shuffledQuestions = [...qData].sort(() => Math.random() - 0.5);
@@ -82,7 +83,50 @@ const PlayerQuiz = () => {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, submitted, loading, error]);
+  }, [timeLeft, submitted, loading, error, cheated]);
+
+  useEffect(() => {
+    if (submitted || cheated || loading || error || !quiz || !participant) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setCheated(true);
+        handleCheatSubmit();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleVisibilityChange);
+    };
+  }, [submitted, cheated, loading, error, quiz, participant]);
+
+  const handleCheatSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await supabase.from("quiz_attempts").upsert({
+        quiz_id: quiz.id,
+        participant_id: participant.id,
+        score: 0,
+        status: 'COMPLETED'
+      }, { onConflict: 'quiz_id, participant_id' });
+      await supabase.from("scores").upsert({
+        participant_id: participant.id,
+        game_id: quiz.game_id,
+        score: 0,
+        time_taken_seconds: quiz.duration_minutes * 60
+      }, { onConflict: 'participant_id, game_id' });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSubmitted(true);
+      setSubmitting(false);
+    }
+  };
 
   const handleSelect = (questionId: string, optionId: string) => {
     if (submitted) return;
@@ -148,6 +192,21 @@ const PlayerQuiz = () => {
 
   if (loading) return <div className="min-h-screen bg-surface flex items-center justify-center font-label-code">LOADING...</div>;
   if (error) return <div className="min-h-screen bg-surface flex items-center justify-center font-label-code text-error">{error}</div>;
+
+  if (cheated) {
+    return (
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6">
+        <div className="bg-surface-container-lowest border-[4px] border-error p-10 text-center shadow-[8px_8px_0px_0px_#b3261e] rounded-2xl max-w-lg w-full">
+          <span className="material-symbols-outlined text-error text-6xl mb-4">gavel</span>
+          <h1 className="font-headline-xl text-error uppercase mb-2">CHEATING DETECTED</h1>
+          <p className="font-body-lg text-on-surface-variant mb-6">You left the arena during a live challenge. Your attempt has been forfeited and a score of 0 has been recorded.</p>
+          <button onClick={() => navigate(`/player/${playerToken}`)} className="bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase">
+            RETURN TO DASHBOARD
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
