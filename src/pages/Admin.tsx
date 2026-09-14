@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import { supabase } from "../lib/supabase";
 import { QRCodeSVG } from "qrcode.react";
+import StudentDetailsModal from "../components/StudentDetailsModal";
 import type { Session } from "@supabase/supabase-js";
 
 const Admin = () => {
@@ -57,6 +58,7 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState("overview"); // overview, campaigns, stage
   const [participants, setParticipants] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [games, setGames] = useState<any[]>([]);
   const [campaignGames, setCampaignGames] = useState<any[]>([]);
   const [debugSubmissions, setDebugSubmissions] = useState<any[]>([]);
@@ -329,8 +331,8 @@ const Admin = () => {
                   NODE: PHOENIX-01
                 </span>
               </div>
-              <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight uppercase">
-                TGA CONTROL ROOM <span className="text-secondary">✦</span> {activeTab.toUpperCase()}
+              <h1 className="font-headline-xl text-3xl md:text-4xl uppercase text-on-surface tracking-tighter">
+                ZCOER TECH FEST <span className="text-secondary">✦</span> {activeTab.toUpperCase()}
               </h1>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-surface-container-lowest p-4 rounded-xl shadow-sm border-2 border-on-surface">
@@ -420,7 +422,11 @@ const Admin = () => {
                         </tr>
                       ) : (
                         participants.map(p => (
-                          <tr key={p.id} className="hover:bg-surface-container-low transition-colors">
+                          <tr 
+                            key={p.id} 
+                            className="hover:bg-surface-container-low transition-colors cursor-pointer"
+                            onClick={() => setSelectedParticipantId(p.id)}
+                          >
                             <td className="py-3.5 px-4">
                               <span className="bg-primary-container text-on-surface border border-on-surface px-2 py-1 rounded font-bold shadow-[2px_2px_0px_0px_#1c1b1b]">
                                 {p.player_id}
@@ -446,7 +452,10 @@ const Admin = () => {
                             </td>
                             <td className="py-3.5 px-4 text-right">
                               <button 
-                                onClick={() => toggleVerifyParticipant(p.id, p.is_verified)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleVerifyParticipant(p.id, p.is_verified);
+                                }}
                                 className={`px-3 py-1 font-label-badge font-bold uppercase text-[10px] border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] ${p.is_verified ? 'bg-surface-variant text-on-surface-variant hover:bg-surface' : 'bg-secondary text-on-secondary hover:-translate-y-0.5 active:translate-y-0.5'}`}
                               >
                                 {p.is_verified ? 'REVOKE' : 'VERIFY'}
@@ -705,6 +714,13 @@ const Admin = () => {
         </main>
       </div>
       
+      {selectedParticipantId && (
+        <StudentDetailsModal 
+          participantId={selectedParticipantId} 
+          onClose={() => setSelectedParticipantId(null)} 
+        />
+      )}
+
       {/* QR Code Modal */}
       {qrToken && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4">

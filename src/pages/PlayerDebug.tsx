@@ -84,14 +84,72 @@ const PlayerDebug = () => {
     setSubmitting(true);
     
     try {
+      // 1. Prepare Auto-Grading Execution Script
+      const fnMatch = code.match(/function\s+([a-zA-Z0-9_]+)/);
+      let testScript = code;
+      let score = 0;
+      
+      if (fnMatch && challenge.test_cases) {
+        const fnName = fnMatch[1];
+        testScript += `\n\n
+const assert = require('assert');
+const testCases = ${challenge.test_cases};
+let passed = 0;
+for (let i = 0; i < testCases.length; i++) {
+  const tc = testCases[i];
+  const input = JSON.parse(tc.input);
+  const expected = JSON.parse(tc.expected);
+  const result = ${fnName}(input);
+  try {
+    assert.deepStrictEqual(result, expected);
+    passed++;
+  } catch (e) {
+    console.error("Test failed on input:", tc.input);
+  }
+}
+if (passed === testCases.length) {
+  console.log("ALL_TESTS_PASSED");
+}
+`;
+        
+        // 2. Call Piston API for Execution
+        const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            language: "javascript",
+            version: "18.15.0",
+            files: [{ content: testScript }]
+          })
+        });
+        
+        const data = await response.json();
+        const output = data.run?.stdout || "";
+        const isPassed = output.includes("ALL_TESTS_PASSED");
+        if (isPassed) {
+          score = challenge.max_score;
+        }
+      }
+
+      // 3. Save Submission
       const { error: attemptError } = await supabase.from("debug_submissions").upsert({
         challenge_id: challenge.id,
         participant_id: participant.id,
         submitted_code: code,
-        status: 'SUBMITTED'
+        score: score,
+        status: 'GRADED'
       }, { onConflict: 'challenge_id, participant_id' });
 
       if (attemptError) throw attemptError;
+      
+      // 4. Save to global scores table
+      await supabase.from("scores").upsert({
+        participant_id: participant.id,
+        game_id: challenge.game_id,
+        score: score,
+        time_taken_seconds: challenge.time_limit_minutes * 60 - timeLeft
+      }, { onConflict: 'participant_id, game_id' });
+
       setSubmitted(true);
     } catch (err) {
       console.error(err);
@@ -116,7 +174,7 @@ const PlayerDebug = () => {
         <div className="bg-surface-container-lowest border-[4px] border-secondary p-10 text-center shadow-[8px_8px_0px_0px_#1c1b1b] rounded-2xl max-w-lg w-full">
           <span className="material-symbols-outlined text-secondary text-6xl mb-4">terminal</span>
           <h1 className="font-headline-xl text-on-surface uppercase mb-2">CODE SUBMITTED</h1>
-          <p className="font-body-lg text-on-surface-variant mb-6">Your code is currently under review by the judging panel. Results will be posted to the global leaderboard.</p>
+          <p className="font-body-lg text-on-surface-variant mb-6">Your code has been securely transmitted and auto-graded by our execution engine. Results will be posted to the global leaderboard.</p>
           <button onClick={() => navigate(`/player/${playerToken}`)} className="bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase">
             RETURN TO DASHBOARD
           </button>

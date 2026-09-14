@@ -16,7 +16,6 @@ const PlayerQuiz = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [score, setScore] = useState<number | null>(null);
 
   const [timeLeft, setTimeLeft] = useState(0);
 
@@ -49,14 +48,15 @@ const PlayerQuiz = () => {
         // Fetch questions and options
         const { data: qData } = await supabase.from("quiz_questions").select("*, quiz_options(*)").eq("quiz_id", quizData.id);
         if (qData) {
-          setQuestions(qData);
+          // Shuffle questions
+          const shuffledQuestions = [...qData].sort(() => Math.random() - 0.5);
+          setQuestions(shuffledQuestions);
         }
 
         // Check if already submitted
         const { data: attemptData } = await supabase.from("quiz_attempts").select("*").eq("quiz_id", quizData.id).eq("participant_id", pData.id).single();
         if (attemptData && attemptData.status === 'COMPLETED') {
           setSubmitted(true);
-          setScore(attemptData.score);
         }
 
       } catch (err: any) {
@@ -131,7 +131,6 @@ const PlayerQuiz = () => {
         time_taken_seconds: (quiz.duration_minutes * 60) - timeLeft
       }, { onConflict: 'participant_id, game_id' });
 
-      setScore(calculatedScore);
       setSubmitted(true);
     } catch (err) {
       console.error(err);
@@ -156,8 +155,13 @@ const PlayerQuiz = () => {
         <div className="bg-surface-container-lowest border-[4px] border-secondary p-10 text-center shadow-[8px_8px_0px_0px_#1c1b1b] rounded-2xl max-w-lg w-full">
           <span className="material-symbols-outlined text-secondary text-6xl mb-4">task_alt</span>
           <h1 className="font-headline-xl text-on-surface uppercase mb-2">QUIZ COMPLETED</h1>
-          <p className="font-body-lg text-on-surface-variant mb-6">Your answers have been securely transmitted to the mainframe.</p>
-          <div className="text-4xl font-black text-secondary mb-6">{score} / {quiz.total_marks} PTS</div>
+          <div className="bg-primary-container p-6 rounded-xl border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] text-center mb-6">
+            <span className="material-symbols-outlined text-4xl text-on-surface mb-2">verified</span>
+            <h2 className="font-headline-lg text-2xl uppercase text-on-surface mb-2">Quiz Submitted Successfully</h2>
+            <div className="font-body-md text-on-surface-variant">
+              Awaiting Leaderboard Reveal. Keep an eye on the main arena!
+            </div>
+          </div>
           <button onClick={() => navigate(`/player/${playerToken}`)} className="bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase">
             RETURN TO DASHBOARD
           </button>

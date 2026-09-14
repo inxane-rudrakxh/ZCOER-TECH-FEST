@@ -81,14 +81,59 @@ const PlayerAi = () => {
     setSubmitting(true);
     
     try {
+      let score = 0;
+      
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      
+      if (apiKey) {
+        const systemInstruction = `You are an expert technical judge evaluating a student's prompt. 
+The scenario is: "${challenge.scenario_description}". 
+Evaluate the student's prompt based on how well it solves the scenario.
+Return ONLY a valid JSON object in this exact format:
+{ "score": [an integer between 0 and 100], "feedback": "[a short 1-sentence explanation]" }`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+
+        const data = await response.json();
+        try {
+          const resultText = data.candidates[0].content.parts[0].text;
+          const resultJson = JSON.parse(resultText);
+          score = resultJson.score || 0;
+          console.log("AI Feedback:", resultJson.feedback);
+        } catch (e) {
+          console.error("Failed to parse Gemini response", e);
+        }
+      } else {
+        console.warn("VITE_GEMINI_API_KEY is not set. Skipping auto-grading.");
+      }
+
       const { error: attemptError } = await supabase.from("ai_submissions").upsert({
         challenge_id: challenge.id,
         participant_id: participant.id,
         prompt_used: prompt,
-        status: 'SUBMITTED'
+        score: score,
+        status: 'GRADED'
       }, { onConflict: 'challenge_id, participant_id' });
 
       if (attemptError) throw attemptError;
+      
+      if (apiKey) {
+        await supabase.from("scores").upsert({
+          participant_id: participant.id,
+          game_id: challenge.game_id,
+          score: score,
+          time_taken_seconds: 30 * 60 - timeLeft
+        }, { onConflict: 'participant_id, game_id' });
+      }
+
       setSubmitted(true);
     } catch (err) {
       console.error(err);
@@ -113,7 +158,7 @@ const PlayerAi = () => {
         <div className="bg-surface-container-lowest border-[4px] border-secondary p-10 text-center shadow-[8px_8px_0px_0px_#1c1b1b] rounded-2xl max-w-lg w-full">
           <span className="material-symbols-outlined text-secondary text-6xl mb-4">smart_toy</span>
           <h1 className="font-headline-xl text-on-surface uppercase mb-2">PROMPT SUBMITTED</h1>
-          <p className="font-body-lg text-on-surface-variant mb-6">Your prompt strategy is being evaluated. Results will be posted to the global leaderboard.</p>
+          <p className="font-body-lg text-on-surface-variant mb-6">Your prompt has been auto-graded by our AI engine. Results will be posted to the global leaderboard.</p>
           <button onClick={() => navigate(`/player/${playerToken}`)} className="bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase">
             RETURN TO DASHBOARD
           </button>
