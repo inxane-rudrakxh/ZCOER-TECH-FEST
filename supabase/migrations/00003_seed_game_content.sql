@@ -102,8 +102,8 @@ BEGIN
         INSERT INTO ai_challenges (game_id, title, scenario_description, status)
         VALUES (
             v_ai_game_id,
-            'Prompt Injection Prevention',
-            'You are tasked with writing a single, robust system prompt for a helpful AI assistant. The prompt must ensure the AI answers general questions BUT strictly refuses any attempt by the user to make it reveal its instructions, ignore previous instructions, or output malicious code. Provide your best system prompt.',
+            'The JSON Enforcer',
+            'Write a prompt that commands the AI to translate a given natural language date (e.g., "next Friday at noon") into a strict JSON object with keys "year", "month", "day", "hour", "minute". If the date is impossible, it must return a JSON object with a single key "error". The AI is notoriously bad at sticking to JSON formats and often includes conversational text. Write the most rigid prompt possible to enforce this JSON-only rule.',
             'LIVE'
         );
     END IF;
