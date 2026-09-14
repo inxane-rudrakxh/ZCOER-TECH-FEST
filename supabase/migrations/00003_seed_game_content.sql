@@ -74,24 +74,75 @@ BEGIN
     -- 2. SEED DEBUG CHALLENGE
     ---------------------------------------------------------
     IF v_debug_game_id IS NOT NULL THEN
-        INSERT INTO debug_challenges (game_id, title, description, language, initial_code, test_cases, time_limit_minutes, max_score, status)
+        -- Insert Low Difficulty (3 mins)
+        INSERT INTO debug_challenges (game_id, title, description, language, initial_code, test_cases, time_limit_minutes, status, difficulty)
         VALUES (
-            v_debug_game_id, 
-            'The Array Reverser', 
-            'This function is supposed to reverse an array in-place, but it has a bug causing it to return the same array unmodified (or worse, corrupted). Find the bug and fix the logic so that the array is perfectly reversed in-place. You MUST return the modified array.', 
-            'javascript', 
-            'function reverseArray(arr) {
-  for (let i = 0; i < arr.length; i++) {
-    let temp = arr[i];
-    arr[i] = arr[arr.length - 1 - i];
-    arr[arr.length - 1 - i] = temp;
+            v_debug_game_id,
+            'The Rogue Array (Easy)',
+            'The function `sumArray` is supposed to return the sum of all numbers in the array. However, it currently returns the wrong result. Fix the bug.',
+            'javascript',
+            'function sumArray(arr) {
+  let sum = 0;
+  for (let i = 1; i <= arr.length; i++) {
+    sum += arr[i];
   }
-  return arr;
-}', 
-            '[{ "input": "[1, 2, 3, 4, 5]", "expected": "[5, 4, 3, 2, 1]" }]', 
-            20, 
-            100, 
-            'LIVE'
+  return sum;
+}',
+            '[
+  {"input": "[1, 2, 3, 4]", "expected": "10"},
+  {"input": "[10, -5, 5]", "expected": "10"},
+  {"input": "[]", "expected": "0"}
+]',
+            3,
+            'LIVE',
+            'easy'
+        );
+
+        -- Insert Medium Difficulty (5 mins)
+        INSERT INTO debug_challenges (game_id, title, description, language, initial_code, test_cases, time_limit_minutes, status, difficulty)
+        VALUES (
+            v_debug_game_id,
+            'The Broken Palindrome (Medium)',
+            'The function `isPalindrome` should return true if the string is a palindrome (reads the same backwards), ignoring non-alphanumeric characters and case. Fix the bug.',
+            'javascript',
+            'function isPalindrome(str) {
+  const cleanStr = str.replace(/[^a-zA-Z0-9]/g, "");
+  const reversed = cleanStr.split("").reverse().join("");
+  return cleanStr === reversed;
+}',
+            '[
+  {"input": "\"A man, a plan, a canal: Panama\"", "expected": "true"},
+  {"input": "\"race a car\"", "expected": "false"},
+  {"input": "\" \"", "expected": "true"}
+]',
+            5,
+            'LIVE',
+            'medium'
+        );
+
+        -- Insert High Difficulty (7 mins)
+        INSERT INTO debug_challenges (game_id, title, description, language, initial_code, test_cases, time_limit_minutes, status, difficulty)
+        VALUES (
+            v_debug_game_id,
+            'The Object Filter (Hard)',
+            'The function `filterUsers` should take an array of user objects and a minimum age, and return an array of JUST the names of the users who are AT LEAST that age, sorted alphabetically. Fix the bugs.',
+            'javascript',
+            'function filterUsers(usersAndAge) {
+  const users = usersAndAge.users;
+  const minAge = usersAndAge.minAge;
+  
+  return users
+    .filter(u => u.age > minAge)
+    .map(u => u.Name)
+    .sort((a, b) => a < b ? 1 : -1);
+}',
+            '[
+  {"input": "{\"users\":[{\"name\":\"Alice\",\"age\":30},{\"name\":\"Bob\",\"age\":20},{\"name\":\"Charlie\",\"age\":25}], \"minAge\":25}", "expected": "[\"Alice\", \"Charlie\"]"},
+  {"input": "{\"users\":[{\"name\":\"Zack\",\"age\":40},{\"name\":\"Adam\",\"age\":40}], \"minAge\":30}", "expected": "[\"Adam\", \"Zack\"]"}
+]',
+            7,
+            'LIVE',
+            'hard'
         );
     END IF;
 
@@ -99,12 +150,37 @@ BEGIN
     -- 3. SEED AI CHALLENGE
     ---------------------------------------------------------
     IF v_ai_game_id IS NOT NULL THEN
-        INSERT INTO ai_challenges (game_id, title, scenario_description, status)
+        -- Insert Low Difficulty
+        INSERT INTO ai_challenges (game_id, title, scenario_description, status, difficulty, time_limit_minutes)
         VALUES (
             v_ai_game_id,
             'The JSON Enforcer',
             'Write a prompt that commands the AI to translate a given natural language date (e.g., "next Friday at noon") into a strict JSON object with keys "year", "month", "day", "hour", "minute". If the date is impossible, it must return a JSON object with a single key "error". The AI is notoriously bad at sticking to JSON formats and often includes conversational text. Write the most rigid prompt possible to enforce this JSON-only rule.',
-            'LIVE'
+            'LIVE',
+            'easy',
+            3
+        );
+
+        -- Insert Medium Difficulty
+        INSERT INTO ai_challenges (game_id, title, scenario_description, status, difficulty, time_limit_minutes)
+        VALUES (
+            v_ai_game_id,
+            'The Security Analyzer',
+            'You are building a security scanner. Write a prompt that instructs the AI to analyze a given SQL query string and return exactly the word "TRUE" if it contains a potential SQL injection vulnerability, and exactly "FALSE" if it is completely safe. It must analyze deep logic, not just look for keywords like DROP, and it must never output any other text. Provide the system prompt.',
+            'LIVE',
+            'medium',
+            5
+        );
+
+        -- Insert High Difficulty
+        INSERT INTO ai_challenges (game_id, title, scenario_description, status, difficulty, time_limit_minutes)
+        VALUES (
+            v_ai_game_id,
+            'The Strict Output Constraint',
+            'You need to write a prompt that forces the AI to review a poorly written piece of Python code. However, you must instruct the AI to ONLY output the fully refactored, highly optimized code. The AI must NOT output any explanations, markdown formatting (no ```python blocks), pleasantries, or comments. The output must be perfectly executable text as-is. Write your most bulletproof prompt.',
+            'LIVE',
+            'hard',
+            7
         );
     END IF;
 
