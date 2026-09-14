@@ -83,19 +83,27 @@ const PlayerDebug = () => {
   useEffect(() => {
     if (submitted || cheated || loading || error || !challenge || !participant) return;
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setCheated(true);
-        handleCheatSubmit();
+    window.history.pushState(null, "", window.location.href);
+
+    const handleCheatTrigger = () => {
+      setCheated(true);
+      handleCheatSubmit();
+    };
+
+    const handleVisibilityChange = (e?: Event) => {
+      if (document.hidden || e?.type === 'blur') {
+        handleCheatTrigger();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleVisibilityChange);
+    window.addEventListener("popstate", handleCheatTrigger);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleVisibilityChange);
+      window.removeEventListener("popstate", handleCheatTrigger);
     };
   }, [submitted, cheated, loading, error, challenge, participant]);
 

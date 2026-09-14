@@ -80,19 +80,27 @@ const PlayerAi = () => {
   useEffect(() => {
     if (submitted || cheated || loading || error || !challenge || !participant) return;
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setCheated(true);
-        handleCheatSubmit();
+    window.history.pushState(null, "", window.location.href);
+
+    const handleCheatTrigger = () => {
+      setCheated(true);
+      handleCheatSubmit();
+    };
+
+    const handleVisibilityChange = (e?: Event) => {
+      if (document.hidden || e?.type === 'blur') {
+        handleCheatTrigger();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleVisibilityChange);
+    window.addEventListener("popstate", handleCheatTrigger);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleVisibilityChange);
+      window.removeEventListener("popstate", handleCheatTrigger);
     };
   }, [submitted, cheated, loading, error, challenge, participant]);
 
@@ -128,7 +136,7 @@ const PlayerAi = () => {
     try {
       let score = 0;
       
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = import.meta.env.VITE_AZURE_OPENAI_KEY;
       
       if (apiKey) {
         const systemInstruction = `You are an expert technical judge evaluating a student's prompt. 
@@ -137,27 +145,32 @@ Evaluate the student's prompt based on how well it solves the scenario.
 Return ONLY a valid JSON object in this exact format:
 { "score": [an integer between 0 and 100], "feedback": "[a short 1-sentence explanation]" }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://ai-examiner-openai.openai.azure.com/openai/deployments/gpt41mini-examiner/chat/completions?api-version=2024-02-15-preview`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'api-key': apiKey
+          },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
+            messages: [
+              { role: "system", content: systemInstruction },
+              { role: "user", content: prompt }
+            ],
+            response_format: { type: "json_object" }
           })
         });
 
         const data = await response.json();
         try {
-          const resultText = data.candidates[0].content.parts[0].text;
+          const resultText = data.choices[0].message.content;
           const resultJson = JSON.parse(resultText);
           score = resultJson.score || 0;
           console.log("AI Feedback:", resultJson.feedback);
         } catch (e) {
-          console.error("Failed to parse Gemini response", e);
+          console.error("Failed to parse Azure OpenAI response", e, data);
         }
       } else {
-        console.warn("VITE_GEMINI_API_KEY is not set. Skipping auto-grading.");
+        console.warn("VITE_AZURE_OPENAI_KEY is not set. Skipping auto-grading.");
       }
 
       const { error: attemptError } = await supabase.from("ai_submissions").upsert({

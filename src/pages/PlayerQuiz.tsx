@@ -10,6 +10,7 @@ const PlayerQuiz = () => {
   const [participant, setParticipant] = useState<any>(null);
   const [quiz, setQuiz] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   
   const [loading, setLoading] = useState(true);
@@ -98,19 +99,27 @@ const PlayerQuiz = () => {
   useEffect(() => {
     if (submitted || cheated || loading || error || !quiz || !participant) return;
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setCheated(true);
-        handleCheatSubmit();
+    window.history.pushState(null, "", window.location.href);
+
+    const handleCheatTrigger = () => {
+      setCheated(true);
+      handleCheatSubmit();
+    };
+
+    const handleVisibilityChange = (e?: Event) => {
+      if (document.hidden || e?.type === 'blur') {
+        handleCheatTrigger();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleVisibilityChange);
+    window.addEventListener("popstate", handleCheatTrigger);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleVisibilityChange);
+      window.removeEventListener("popstate", handleCheatTrigger);
     };
   }, [submitted, cheated, loading, error, quiz, participant]);
 
@@ -257,20 +266,20 @@ const PlayerQuiz = () => {
         </section>
 
         <section className="w-full px-4 py-8 max-w-4xl mx-auto space-y-12">
-          {questions.map((q, idx) => (
-            <div key={q.id} className="bg-surface-container-lowest border-[4px] border-on-surface rounded-2xl p-6 shadow-[8px_8px_0px_0px_#1c1b1b]">
+          {questions.length > 0 && (
+            <div className="bg-surface-container-lowest border-[4px] border-on-surface rounded-2xl p-6 shadow-[8px_8px_0px_0px_#1c1b1b]">
               <div className="flex justify-between items-start mb-4 border-b-[2px] border-on-surface pb-4">
-                <span className="font-label-badge font-bold uppercase text-secondary">QUESTION {idx + 1}</span>
-                <span className="font-label-code font-bold">{q.marks} PTS</span>
+                <span className="font-label-badge font-bold uppercase text-secondary">QUESTION {currentQuestionIndex + 1} OF {questions.length}</span>
+                <span className="font-label-code font-bold">{questions[currentQuestionIndex].marks} PTS</span>
               </div>
-              <h2 className="font-headline-lg text-xl mb-6">{q.question_text}</h2>
+              <h2 className="font-headline-lg text-xl mb-6">{questions[currentQuestionIndex].question_text}</h2>
               <div className="grid grid-cols-1 gap-3">
-                {q.quiz_options.map((opt: any) => {
-                  const isSelected = answers[q.id] === opt.id;
+                {questions[currentQuestionIndex].quiz_options.map((opt: any) => {
+                  const isSelected = answers[questions[currentQuestionIndex].id] === opt.id;
                   return (
                     <button
                       key={opt.id}
-                      onClick={() => handleSelect(q.id, opt.id)}
+                      onClick={() => handleSelect(questions[currentQuestionIndex].id, opt.id)}
                       className={`text-left p-4 rounded-xl border-[2px] transition-all font-body-lg flex items-center gap-3 ${
                         isSelected 
                           ? 'border-secondary bg-secondary-fixed/20 shadow-[4px_4px_0px_0px_#1c1b1b] translate-x-1 -translate-y-1' 
@@ -286,16 +295,33 @@ const PlayerQuiz = () => {
                 })}
               </div>
             </div>
-          ))}
+          )}
           
-          <div className="flex justify-end pb-20">
+          <div className="flex justify-between pb-20 gap-4">
             <button 
-              onClick={handleSubmit} 
-              disabled={submitting}
-              className="bg-secondary text-on-secondary font-headline-lg text-xl uppercase px-8 py-4 border-[4px] border-on-surface shadow-[6px_6px_0px_0px_#1c1b1b] hover:-translate-y-1 active:translate-y-1 transition-all disabled:opacity-50"
+              onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+              disabled={currentQuestionIndex === 0}
+              className="bg-surface text-on-surface font-headline-lg text-lg uppercase px-6 py-3 border-[4px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 active:translate-y-1 transition-all disabled:opacity-50"
             >
-              {submitting ? 'SUBMITTING...' : 'SUBMIT QUIZ'}
+              PREVIOUS
             </button>
+
+            {currentQuestionIndex < questions.length - 1 ? (
+              <button 
+                onClick={() => setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1))}
+                className="bg-primary-container text-on-surface font-headline-lg text-lg uppercase px-6 py-3 border-[4px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 active:translate-y-1 transition-all"
+              >
+                NEXT
+              </button>
+            ) : (
+              <button 
+                onClick={handleSubmit} 
+                disabled={submitting}
+                className="bg-secondary text-on-secondary font-headline-lg text-lg uppercase px-6 py-3 border-[4px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 active:translate-y-1 transition-all disabled:opacity-50"
+              >
+                {submitting ? 'SUBMITTING...' : 'SUBMIT QUIZ'}
+              </button>
+            )}
           </div>
         </section>
       </main>
