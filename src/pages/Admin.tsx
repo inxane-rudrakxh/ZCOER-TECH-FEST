@@ -76,21 +76,9 @@ const Admin = () => {
     try {
       const user_id = session.user.id;
 
-      const { data: adminGames } = await supabase.from("games").select("*").eq("admin_id", user_id);
-      
-      if (!adminGames || adminGames.length === 0) {
-        // Auto-seed games for new admin
-        const baseGames = [
-          { slug: 'quiz', name: 'TECHNICAL QUIZ', description: 'Rapid-fire multiple choice test.', admin_id: user_id },
-          { slug: 'debug', name: 'CODE DEBUGGING', description: 'Live in-browser IDE sandbox.', admin_id: user_id },
-          { slug: 'ai', name: 'AI / PROMPT CHALLENGE', description: 'Generative AI Prompt Clash.', admin_id: user_id }
-        ];
-        await supabase.from("games").insert(baseGames);
-      }
-
       const [campsRes, gamesRes] = await Promise.all([
         supabase.from("registration_campaigns").select("*").eq("admin_id", user_id).order("created_at", { ascending: false }),
-        supabase.from("games").select("*").eq("admin_id", user_id).order("created_at", { ascending: true })
+        supabase.from("games").select("*").order("created_at", { ascending: true })
       ]);
       
       if (campsRes.data) setCampaigns(campsRes.data);
