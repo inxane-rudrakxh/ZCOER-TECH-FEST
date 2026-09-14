@@ -7,6 +7,7 @@ import { useParams, Link } from "react-router-dom";
 const Register = () => {
   const { registrationToken } = useParams<{ registrationToken: string }>();
   const [campaign, setCampaign] = useState<any>(null);
+  const [campaignGames, setCampaignGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,6 +18,7 @@ const Register = () => {
     academicYear: "1st Year",
     rollNo: "",
     mobile: "",
+    selectedGameIds: [] as string[],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successData, setSuccessData] = useState<{ playerId: string; secureToken: string } | null>(null);
@@ -42,6 +44,21 @@ const Register = () => {
           setError(`Registration is currently ${data.status.toLowerCase()}.`);
         } else {
           setCampaign(data);
+          
+          // Fetch available games for this campaign
+          const { data: cgData } = await supabase
+            .from("registration_campaign_games")
+            .select("game_id, games(*)")
+            .eq("campaign_id", data.id);
+            
+          if (cgData && cgData.length > 0) {
+            const gamesList = cgData.map((cg: any) => cg.games).filter(g => g !== null);
+            setCampaignGames(gamesList);
+            // By default select all available games
+            if (gamesList.length > 0) {
+              setFormData(prev => ({ ...prev, selectedGameIds: gamesList.map((g: any) => g.id) }));
+            }
+          }
         }
       } catch (err: any) {
         setError("Error validating registration link.");
@@ -74,9 +91,8 @@ const Register = () => {
 
     const playerId = `TGA-${Math.floor(1000 + Math.random() * 9000)}`;
     const secureToken = generateRandomString(32);
-
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("participants")
         .insert([
           {
@@ -88,7 +104,8 @@ const Register = () => {
             mobile_number: formData.mobile,
             player_id: playerId,
             secure_token: secureToken,
-            registered_via_campaign: campaign.id
+            registered_via_campaign: campaign.id,
+            is_verified: true
           },
         ])
         .select()
@@ -96,6 +113,21 @@ const Register = () => {
 
       if (error) {
         throw error;
+      }
+
+      if (formData.selectedGameIds.length > 0 && data) {
+        const insertRows = formData.selectedGameIds.map(gameId => ({
+          participant_id: data.id,
+          game_id: gameId
+        }));
+        
+        const { error: gameError } = await supabase
+          .from("game_participants")
+          .insert(insertRows);
+        
+        if (gameError) {
+          console.error("Failed to assign game:", gameError);
+        }
       }
 
       setSuccessData({ playerId, secureToken });
@@ -257,6 +289,31 @@ const Register = () => {
                       className="bg-surface border-[2px] border-on-surface px-4 py-3 rounded-xl font-headline-md text-[16px] text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_0px_#1c1b1b]"
                       placeholder="10-digit number"
                     />
+                  </div>
+
+                  <div className="flex flex-col mt-2">
+                    <label className="font-label-badge uppercase text-on-surface font-bold mb-2">SELECT ARENA ROUNDS *</label>
+                    <div className="flex flex-col gap-3">
+                      {campaignGames.map((game: any) => (
+                        <label key={game.id} className="flex items-center gap-3 cursor-pointer bg-surface-container-lowest p-3 rounded-xl border-[2px] border-on-surface hover:bg-surface-container-low transition-colors">
+                          <input 
+                            type="checkbox"
+                            className="w-5 h-5 accent-secondary"
+                            checked={formData.selectedGameIds.includes(game.id)}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setFormData(prev => ({
+                                ...prev,
+                                selectedGameIds: checked 
+                                  ? [...prev.selectedGameIds, game.id]
+                                  : prev.selectedGameIds.filter(id => id !== game.id)
+                              }));
+                            }}
+                          />
+                          <span className="font-headline-md text-on-surface text-[16px] uppercase tracking-wide">{game.name}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
                   <button

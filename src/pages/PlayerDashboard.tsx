@@ -30,13 +30,12 @@ const PlayerDashboard = () => {
         }
         setParticipant(pData);
 
-        // Fetch games for this campaign
-        // First get the campaign_games mapping
+        // Fetch the game assigned to this student
         const { data: cgData } = await supabase
-          .from("registration_campaign_games")
+          .from("game_participants")
           .select("game_id")
-          .eq("campaign_id", pData.registered_via_campaign);
-
+          .eq("participant_id", pData.id);
+          
         if (cgData && cgData.length > 0) {
           const gameIds = cgData.map((cg) => cg.game_id);
           const { data: gData } = await supabase

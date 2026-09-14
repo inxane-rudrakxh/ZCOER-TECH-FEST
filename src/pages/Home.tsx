@@ -110,16 +110,16 @@ const Home = () => {
                 {/* CTA Action Cluster */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <Link
-                    className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary-container text-on-surface font-headline-md text-[18px] uppercase tracking-wider rounded-xl shadow-xl hover:-translate-y-1 active:translate-y-1 transition-all"
-                    to="/games"
+                    className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary-container text-on-surface font-headline-md text-[18px] uppercase tracking-wider rounded-xl shadow-xl hover:-translate-y-1 active:translate-y-1 transition-all border-[3px] border-on-surface"
+                    to="/login"
                   >
-                    <span>ARENA STAGEFLOW</span>
+                    <span>STUDENT LOGIN</span>
                     <span className="material-symbols-outlined font-black text-2xl group-hover:translate-x-1 transition-transform">
-                      arrow_outward
+                      login
                     </span>
                   </Link>
                   <Link
-                    className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-secondary text-on-secondary font-headline-md text-[16px] uppercase tracking-wider rounded-xl shadow-md hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-secondary text-on-secondary font-headline-md text-[16px] uppercase tracking-wider rounded-xl shadow-md hover:-translate-y-0.5 active:translate-y-0.5 transition-all border-[3px] border-on-surface"
                     to="/leaderboard"
                   >
                     <span className="material-symbols-outlined text-[20px]">

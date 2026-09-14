@@ -17,6 +17,7 @@ import PlayerDashboard from './pages/PlayerDashboard';
 import PlayerQuiz from './pages/PlayerQuiz';
 import PlayerDebug from './pages/PlayerDebug';
 import PlayerAi from './pages/PlayerAi';
+import StudentLogin from './pages/StudentLogin';
 
 // Layout Wrappers
 import MobileOnly from './components/MobileOnly';
@@ -40,6 +41,12 @@ function App() {
         <Route path="/register/:registrationToken" element={
           <MobileOnly>
             <Register />
+          </MobileOnly>
+        } />
+        
+        <Route path="/login" element={
+          <MobileOnly>
+            <StudentLogin />
           </MobileOnly>
         } />
         

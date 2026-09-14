@@ -61,8 +61,12 @@ const Admin = () => {
       if (!error) {
         setNewCampaignName("");
         fetchData();
+      } else {
+        alert("Failed to create campaign: " + error.message);
+        console.error("Create campaign error:", error);
       }
-    } catch (err) {
+    } catch (err: any) {
+      alert("Exception creating campaign: " + err.message);
       console.error(err);
     } finally {
       setIsCreating(false);
