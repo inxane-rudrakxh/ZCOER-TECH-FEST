@@ -49,9 +49,19 @@ const PlayerQuiz = () => {
         // Fetch questions and options
         const { data: qData } = await supabase.from("quiz_questions").select("*, quiz_options!quiz_options_question_id_fkey(*)").eq("quiz_id", quizData.id);
         if (qData) {
-          // Shuffle questions
-          const shuffledQuestions = [...qData].sort(() => Math.random() - 0.5);
-          setQuestions(shuffledQuestions);
+          // Categorize and Shuffle
+          const easy = qData.filter(q => q.difficulty === 'easy').sort(() => Math.random() - 0.5);
+          const medium = qData.filter(q => q.difficulty === 'medium').sort(() => Math.random() - 0.5);
+          const hard = qData.filter(q => q.difficulty === 'hard').sort(() => Math.random() - 0.5);
+          
+          // Select 5 from each (fallback to all available if less than 5)
+          const selectedQuestions = [
+            ...easy.slice(0, 5),
+            ...medium.slice(0, 5),
+            ...hard.slice(0, 5)
+          ];
+          
+          setQuestions(selectedQuestions);
         }
 
         // Check if already submitted
