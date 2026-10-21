@@ -16,7 +16,7 @@ const About = () => {
               </span>
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-              The Technical Game Arena is the ultimate proving ground for aspiring engineers, developed for Engineering Day 2026.
+              The Technical Game Arena is the ultimate proving ground for aspiring engineers, hosted by the AIDS &amp; AIML Department.
             </p>
           </div>
 
@@ -26,7 +26,7 @@ const About = () => {
               <div className="flex flex-col md:flex-row gap-8 justify-between">
                 <div className="flex-1">
                   <h2 className="font-headline-lg text-2xl uppercase text-on-surface mb-4">
-                    ENGINEERING DAY 2026
+                    TECHNICAL GAME ARENA
                   </h2>
                   <p className="text-on-surface-variant mb-4">
                     Hosted by the AIDS & AIML Student Guild, the Tech Fest Arena is a high-octane algorithmic clash designed to test the limits of logic, coding prowess, and artificial intelligence understanding.

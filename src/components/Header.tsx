@@ -16,14 +16,12 @@ const Header = () => {
       <div className="bg-on-surface text-primary-container border-b-[3px] border-on-surface overflow-hidden py-1.5 selection:bg-primary-container selection:text-on-surface">
         <div className="animate-marquee whitespace-nowrap font-label-ticker text-label-ticker uppercase tracking-widest">
           <span className="mx-4 flex items-center gap-3">
-            <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> ENGINEERING DAY
-            2026 <span>✦</span> AIDS &amp; AIML DEPARTMENT <span>✦</span> THINK
+            <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> AIDS &amp; AIML DEPARTMENT <span>✦</span> THINK
             • BUILD • DEBUG • CREATE <span>✦</span> 3 BATTLES: QUIZ • CODE DEBUG
             • AI PROMPT BATTLE <span>✦</span> LIVE MATCH TELEMETRY ACTIVE
           </span>
           <span className="mx-4 flex items-center gap-3">
-            <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> ENGINEERING DAY
-            2026 <span>✦</span> AIDS &amp; AIML DEPARTMENT <span>✦</span> THINK
+            <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> AIDS &amp; AIML DEPARTMENT <span>✦</span> THINK
             • BUILD • DEBUG • CREATE <span>✦</span> 3 BATTLES: QUIZ • CODE DEBUG
             • AI PROMPT BATTLE <span>✦</span> LIVE MATCH TELEMETRY ACTIVE
           </span>
@@ -44,12 +42,7 @@ const Header = () => {
               </div>
             </div>
           </div>
-          <div className="hidden xl:flex items-center gap-2 bg-secondary-fixed border-[2px] border-on-surface px-3 py-1 rounded-full shadow-[2px_2px_0px_0px_#1c1b1b]">
-            <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
-            <span className="font-label-badge text-label-badge text-on-secondary-fixed font-bold uppercase tracking-wider">
-              ENG DAY 2026
-            </span>
-          </div>
+
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-auto">
           <nav

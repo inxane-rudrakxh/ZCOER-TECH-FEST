@@ -26,7 +26,7 @@ const Footer = () => {
           <div className="md:col-span-5 space-y-3">
             <div className="flex items-center gap-2 font-headline-md text-headline-md uppercase">
               <span className="w-4 h-4 bg-primary-container border-[2px] border-on-surface inline-block"></span>
-              ENGINEERING DAY 2026 ARENA
+              TECHNICAL GAME ARENA
             </div>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-md">
               Official competitive arena orchestrated by Artificial Intelligence

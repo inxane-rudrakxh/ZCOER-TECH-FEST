@@ -49,14 +49,12 @@ const Home = () => {
           <div className="w-full bg-primary-container text-on-surface py-2.5 overflow-hidden shadow-md">
             <div className="animate-marquee whitespace-nowrap font-label-ticker text-label-ticker uppercase tracking-widest font-extrabold">
               <span className="mx-6 flex items-center gap-4">
-                <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> ENGINEERING
-                DAY 2026 <span>✦</span> AIDS &amp; AIML DEPARTMENT{" "}
+                <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> AIDS &amp; AIML DEPARTMENT{" "}
                 <span>✦</span> THINK • BUILD • DEBUG • CREATE <span>✦</span>{" "}
                 HIGH OCTANE ALGORITHMIC CLASH <span>✦</span> {playerCount} SQUADS ACTIVE
               </span>
               <span className="mx-6 flex items-center gap-4">
-                <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> ENGINEERING
-                DAY 2026 <span>✦</span> AIDS &amp; AIML DEPARTMENT{" "}
+                <span>✦</span> TECHNICAL GAME ARENA <span>✦</span> AIDS &amp; AIML DEPARTMENT{" "}
                 <span>✦</span> THINK • BUILD • DEBUG • CREATE <span>✦</span>{" "}
                 HIGH OCTANE ALGORITHMIC CLASH <span>✦</span> {playerCount} SQUADS ACTIVE
               </span>
@@ -346,7 +344,7 @@ const Home = () => {
                 </div>
                 <div>
                   <div className="font-label-badge text-label-badge uppercase tracking-wider text-secondary font-bold mb-1">
-                    ENGINEERING DAY 2026
+                    DEPT OF AIDS &amp; AIML
                   </div>
                   <p className="font-headline-md text-headline-md uppercase text-on-surface leading-tight">
                     DEPT OF AIDS &amp; AIML

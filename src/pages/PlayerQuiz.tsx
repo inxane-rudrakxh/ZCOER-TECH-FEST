@@ -20,8 +20,6 @@ const PlayerQuiz = () => {
   const [cheated, setCheated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [timeLeft, setTimeLeft] = useState(0);
-
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
@@ -51,18 +49,8 @@ const PlayerQuiz = () => {
         // Fetch questions and options
         const { data: qData } = await supabase.from("quiz_questions").select("*, quiz_options!quiz_options_question_id_fkey(*)").eq("quiz_id", quizData.id);
         if (qData) {
-          // Categorize and Shuffle
-          const easy = qData.filter(q => q.difficulty === 'easy').sort(() => Math.random() - 0.5);
-          const medium = qData.filter(q => q.difficulty === 'medium').sort(() => Math.random() - 0.5);
-          const hard = qData.filter(q => q.difficulty === 'hard').sort(() => Math.random() - 0.5);
-          
-          // Select 5 from each (fallback to all available if less than 5)
-          selectedQuestions = [
-            ...easy.slice(0, 5),
-            ...medium.slice(0, 5),
-            ...hard.slice(0, 5)
-          ];
-          
+          // Use all available questions, shuffled
+          selectedQuestions = qData.sort(() => Math.random() - 0.5);
           setQuestions(selectedQuestions);
         }
 
@@ -70,8 +58,6 @@ const PlayerQuiz = () => {
         const { data: attemptData } = await supabase.from("quiz_attempts").select("*").eq("quiz_id", quizData.id).eq("participant_id", pData.id).single();
         if (attemptData && attemptData.status === 'COMPLETED') {
           setSubmitted(true);
-        } else {
-          setTimeLeft(selectedQuestions.length * 60);
         }
 
       } catch (err: any) {
@@ -84,22 +70,7 @@ const PlayerQuiz = () => {
     fetchQuizData();
   }, [playerToken]);
 
-  useEffect(() => {
-    if (timeLeft <= 0 || submitted || loading || error) return;
-    const timer = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timer);
-          handleSubmit();
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, submitted, loading, error, cheated]);
-
-  const { overlay: antiCheatOverlay } = useAntiCheat({
+const { overlay: antiCheatOverlay } = useAntiCheat({
     isActive: !submitted && !loading && !error && !!quiz && !!participant,
     participantId: participant?.id || "",
     gameId: quiz?.game_id || "",
@@ -177,7 +148,7 @@ const PlayerQuiz = () => {
         participant_id: participant.id,
         game_id: quiz.game_id,
         score: calculatedScore,
-        time_taken_seconds: (quiz.duration_minutes * 60) - timeLeft
+        time_taken_seconds: 0
       }, { onConflict: 'participant_id, game_id' });
 
       setSubmitted(true);
@@ -187,12 +158,6 @@ const PlayerQuiz = () => {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
   };
 
   if (loading) return <div className="min-h-screen bg-surface flex items-center justify-center font-label-code">LOADING...</div>;
@@ -245,10 +210,6 @@ const PlayerQuiz = () => {
             <div className="flex items-center gap-3">
               <span className="font-headline-md text-[18px] uppercase tracking-wider text-on-surface">ROUND 01: QUIZ</span>
               <span className="bg-error text-on-error px-2 py-0.5 font-bold uppercase text-xs rounded animate-pulse">LIVE</span>
-            </div>
-            <div className="flex items-center gap-2 bg-on-surface text-surface px-4 py-1.5 rounded-full shadow-[3px_3px_0px_0px_#1c1b1b]">
-              <span className="material-symbols-outlined text-[18px]">timer</span>
-              <span className="font-label-code font-bold tracking-widest uppercase">{formatTime(timeLeft)} REMAINING</span>
             </div>
           </div>
         </section>
