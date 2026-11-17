@@ -118,6 +118,27 @@ const Leaderboard = () => {
     doc.save(`leaderboard_${selectedCampaignId === 'all' ? 'global' : selectedCampaignId}.pdf`);
   };
 
+  const handleExportCSV = () => {
+    const headers = ["Rank", "Player ID", "Name", "Games Played", "Total Score"];
+    const rows = filteredLeaderboard.map((player, index) => [
+      index + 1,
+      `"${player.player_id}"`,
+      `"${player.full_name}"`,
+      `"${player.games_played} / 3"`,
+      player.total_score.toFixed(2)
+    ]);
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `leaderboard_${selectedCampaignId === 'all' ? 'global' : selectedCampaignId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased w-full min-h-screen flex flex-col">
       <Header />
@@ -160,13 +181,22 @@ const Leaderboard = () => {
                     ))}
                   </select>
                 </div>
-                <button
-                  onClick={handleExportPDF}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-secondary text-on-secondary px-4 py-2 font-headline-md uppercase text-sm border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[18px]">download</span>
-                  EXPORT PDF
-                </button>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={handleExportPDF}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-secondary text-on-secondary px-4 py-2 font-headline-md uppercase text-sm border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    EXPORT PDF
+                  </button>
+                  <button
+                    onClick={handleExportCSV}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-surface text-on-surface px-4 py-2 font-headline-md uppercase text-sm border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">table_chart</span>
+                    EXPORT CSV
+                  </button>
+                </div>
               </div>
 
               {loading ? (

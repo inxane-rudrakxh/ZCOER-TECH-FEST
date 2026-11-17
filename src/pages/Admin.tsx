@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { QRCodeSVG } from "qrcode.react";
 import StudentDetailsModal from "../components/StudentDetailsModal";
 import type { Session } from "@supabase/supabase-js";
+import { exportAllResultsPDF, exportResultsCSV, exportSingleStudentPDF, type StudentScoreRecord } from "../utils/exportUtils";
 
 const Admin = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -55,12 +56,15 @@ const Admin = () => {
     await supabase.auth.signOut();
   };
 
-  const [activeTab, setActiveTab] = useState("overview"); // overview, campaigns, stage
+  const [activeTab, setActiveTab] = useState("overview"); // overview, campaigns, stage, results, settings
   const [participants, setParticipants] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [games, setGames] = useState<any[]>([]);
   const [campaignGames, setCampaignGames] = useState<any[]>([]);
+  const [scores, setScores] = useState<any[]>([]);
+  const [resultsFilterCampaign, setResultsFilterCampaign] = useState<string>("all");
+  const [resultsSearchQuery, setResultsSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   const [newCampaignName, setNewCampaignName] = useState("");
@@ -95,13 +99,15 @@ const Admin = () => {
     try {
       const user_id = session.user.id;
 
-      const [campsRes, gamesRes] = await Promise.all([
+      const [campsRes, gamesRes, scoresRes] = await Promise.all([
         supabase.from("registration_campaigns").select("*").eq("admin_id", user_id).order("created_at", { ascending: false }),
-        supabase.from("games").select("*").order("created_at", { ascending: true })
+        supabase.from("games").select("*").order("created_at", { ascending: true }),
+        supabase.from("scores").select("*, games(slug, name)")
       ]);
       
       if (campsRes.data) setCampaigns(campsRes.data);
       if (gamesRes.data) setGames(gamesRes.data);
+      if (scoresRes.data) setScores(scoresRes.data);
 
       const campaignIds = campsRes.data && campsRes.data.length > 0 ? campsRes.data.map(c => c.id) : [];
 
@@ -117,7 +123,6 @@ const Admin = () => {
         if (partsRes.data) setParticipants(partsRes.data);
         if (cgRes.data) setCampaignGames(cgRes.data);
 
-
       } else {
         setParticipants([]);
         setCampaignGames([]);
@@ -128,6 +133,50 @@ const Admin = () => {
       setLoading(false);
     }
   };
+
+  // Computed marks ledger for all students
+  const computedScoreRecords: StudentScoreRecord[] = participants.map((p) => {
+    const pScores = scores.filter(s => s.participant_id === p.id);
+    const quizGame = games.find(g => g.slug === 'quiz');
+    const debugGame = games.find(g => g.slug === 'debug');
+
+    const quizEntry = pScores.find(s => s.games?.slug === 'quiz' || (quizGame && s.game_id === quizGame.id));
+    const puzzleEntry = pScores.find(s => s.games?.slug === 'debug' || (debugGame && s.game_id === debugGame.id));
+
+    const quizScore = quizEntry ? Number(quizEntry.score) : 0;
+    const puzzleScore = puzzleEntry ? Number(puzzleEntry.score) : 0;
+    const totalScore = quizScore + puzzleScore;
+    const maxTotalScore = 40; // 20 Quiz + 20 Puzzle
+    const percentage = (totalScore / maxTotalScore) * 100;
+    const timeTaken = (quizEntry?.time_taken_seconds || 0) + (puzzleEntry?.time_taken_seconds || 0);
+
+    return {
+      playerId: p.player_id,
+      fullName: p.full_name,
+      department: p.department || 'AI & DS',
+      academicYear: p.academic_year || 'S.Y. B.Tech',
+      campaignName: p.registration_campaigns?.name || 'General',
+      quizScore,
+      maxQuizScore: 20,
+      puzzleScore,
+      maxPuzzleScore: 20,
+      totalScore,
+      maxTotalScore,
+      percentage,
+      status: (percentage >= 75 ? 'DISTINCTION' : percentage >= 40 ? 'PASS' : 'NEEDS_IMPROVEMENT') as 'PASS' | 'DISTINCTION' | 'NEEDS_IMPROVEMENT',
+      timeTakenSeconds: timeTaken,
+      submittedAt: p.created_at
+    };
+  }).sort((a, b) => b.totalScore - a.totalScore).map((r, i) => ({ ...r, rank: i + 1 }));
+
+  const filteredScoreRecords = computedScoreRecords.filter(r => {
+    const matchesCampaign = resultsFilterCampaign === "all" || 
+      participants.find(p => p.player_id === r.playerId)?.registered_via_campaign === resultsFilterCampaign;
+    const matchesSearch = !resultsSearchQuery.trim() || 
+      r.fullName.toLowerCase().includes(resultsSearchQuery.toLowerCase()) || 
+      r.playerId.toLowerCase().includes(resultsSearchQuery.toLowerCase());
+    return matchesCampaign && matchesSearch;
+  });
 
   useEffect(() => {
     if (session) {
@@ -313,6 +362,17 @@ const Admin = () => {
               <span className="truncate">Stage Controls</span>
             </button>
             <button
+              onClick={() => setActiveTab('results')}
+              className={`w-full flex items-center gap-3 px-4 py-3 uppercase tracking-wider transition-all rounded-xl font-headline-md text-[13px] whitespace-nowrap overflow-hidden text-left ${
+                activeTab === 'results' 
+                  ? 'bg-primary-container text-on-surface font-bold border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b]' 
+                  : 'border-[3px] border-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:-translate-y-0.5 active:translate-y-0.5'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px] shrink-0 text-secondary">grade</span>
+              <span className="truncate">Marks &amp; Reports</span>
+            </button>
+            <button
               onClick={() => setActiveTab('settings')}
               className={`w-full flex items-center gap-3 px-4 py-3 uppercase tracking-wider transition-all rounded-xl font-headline-md text-[13px] whitespace-nowrap overflow-hidden text-left ${
                 activeTab === 'settings' 
@@ -412,14 +472,32 @@ const Admin = () => {
 
               {/* Squad Telemetry Feed */}
               <div className="bg-surface-container-lowest p-6 rounded-xl shadow-md space-y-6 border-2 border-on-surface border-b-[6px] border-r-[6px]">
-                <div>
-                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase tracking-tight flex items-center gap-2">
-                    <span className="material-symbols-outlined text-secondary">terminal</span> 
-                    Squad Telemetry Feed
-                  </h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant text-sm">
-                    Real-time registered participants stream.
-                  </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="font-headline-md text-headline-md text-on-surface uppercase tracking-tight flex items-center gap-2">
+                      <span className="material-symbols-outlined text-secondary">terminal</span> 
+                      Squad Telemetry Feed
+                    </h2>
+                    <p className="font-body-md text-body-md text-on-surface-variant text-sm">
+                      Real-time registered participants stream.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => exportAllResultsPDF(computedScoreRecords)}
+                      className="flex items-center gap-1.5 bg-secondary text-on-secondary px-3.5 py-2 font-headline-md uppercase text-xs border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                      EXPORT PDF
+                    </button>
+                    <button
+                      onClick={() => exportResultsCSV(computedScoreRecords)}
+                      className="flex items-center gap-1.5 bg-surface text-on-surface px-3.5 py-2 font-headline-md uppercase text-xs border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">table_chart</span>
+                      EXPORT CSV
+                    </button>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -645,6 +723,220 @@ const Admin = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'results' && (
+            <div className="space-y-6">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-2 border-on-surface border-b-4 border-r-4">
+                  <div className="font-label-badge text-xs uppercase font-bold text-on-surface-variant">
+                    EVALUATED STUDENTS
+                  </div>
+                  <div className="font-headline-lg text-3xl font-black text-on-surface mt-1">
+                    {filteredScoreRecords.length}
+                  </div>
+                  <div className="font-label-code text-xs text-on-surface-variant mt-0.5">
+                    Of {participants.length} registered
+                  </div>
+                </div>
+
+                <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-2 border-on-surface border-b-4 border-r-4">
+                  <div className="font-label-badge text-xs uppercase font-bold text-secondary">
+                    CLASS AVERAGE
+                  </div>
+                  <div className="font-headline-lg text-3xl font-black text-secondary mt-1">
+                    {filteredScoreRecords.length > 0 
+                      ? (filteredScoreRecords.reduce((acc, r) => acc + r.totalScore, 0) / filteredScoreRecords.length).toFixed(1) 
+                      : '0.0'} / 40
+                  </div>
+                  <div className="font-label-code text-xs text-on-surface-variant mt-0.5">
+                    Quiz (20) + Puzzle (20)
+                  </div>
+                </div>
+
+                <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-2 border-on-surface border-b-4 border-r-4">
+                  <div className="font-label-badge text-xs uppercase font-bold text-on-surface">
+                    TOP SCORE
+                  </div>
+                  <div className="font-headline-lg text-3xl font-black text-on-surface mt-1">
+                    {filteredScoreRecords.length > 0 
+                      ? Math.max(...filteredScoreRecords.map(r => r.totalScore)).toFixed(1) 
+                      : '0.0'} / 40
+                  </div>
+                  <div className="font-label-code text-xs text-on-surface-variant mt-0.5">
+                    Highest candidate score
+                  </div>
+                </div>
+
+                <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-2 border-on-surface border-b-4 border-r-4">
+                  <div className="font-label-badge text-xs uppercase font-bold text-error">
+                    PASS PERCENTAGE
+                  </div>
+                  <div className="font-headline-lg text-3xl font-black text-error mt-1">
+                    {filteredScoreRecords.length > 0 
+                      ? ((filteredScoreRecords.filter(r => r.percentage >= 40).length / filteredScoreRecords.length) * 100).toFixed(0) 
+                      : '0'}%
+                  </div>
+                  <div className="font-label-code text-xs text-on-surface-variant mt-0.5">
+                    Threshold: &gt;= 40%
+                  </div>
+                </div>
+              </div>
+
+              {/* Master Control & Table */}
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-md space-y-6 border-2 border-on-surface border-b-[6px] border-r-[6px]">
+                
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-on-surface/20 pb-4">
+                  <div>
+                    <h2 className="font-headline-md text-2xl uppercase tracking-tight flex items-center gap-2">
+                      <span className="material-symbols-outlined text-secondary">grade</span>
+                      OOPS in C++ Assessment Results &amp; Marks Ledger
+                    </h2>
+                    <p className="font-body-md text-on-surface-variant text-sm mt-0.5">
+                      Subject: Object Oriented Programming (AI &amp; DS) • Quiz &amp; Puzzle Performance telemetry.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => exportAllResultsPDF(filteredScoreRecords, "S.Y. B.Tech (AI & DS) – OOPS in C++ Assessment Report")}
+                      className="flex items-center gap-2 bg-secondary text-on-secondary px-4 py-2.5 font-headline-md uppercase text-xs border-[2px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all rounded-lg"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                      EXPORT PDF REPORT
+                    </button>
+                    <button
+                      onClick={() => exportResultsCSV(filteredScoreRecords, `ZCOER_OOPS_Marksheet_${new Date().toISOString().slice(0, 10)}.csv`)}
+                      className="flex items-center gap-2 bg-surface text-on-surface px-4 py-2.5 font-headline-md uppercase text-xs border-[2px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] hover:-translate-y-0.5 active:translate-y-0.5 transition-all rounded-lg"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">table_chart</span>
+                      EXPORT CSV (EXCEL)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filters */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <span className="material-symbols-outlined text-on-surface-variant text-[20px]">filter_alt</span>
+                    <select
+                      value={resultsFilterCampaign}
+                      onChange={e => setResultsFilterCampaign(e.target.value)}
+                      className="bg-surface text-on-surface border-[2px] border-on-surface px-3 py-2 font-headline-md uppercase text-xs shadow-[2px_2px_0px_0px_#1c1b1b] focus:outline-none w-full sm:w-auto rounded-lg"
+                    >
+                      <option value="all">ALL CAMPAIGNS (GLOBAL)</option>
+                      {campaigns.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="w-full sm:w-72">
+                    <input
+                      type="text"
+                      value={resultsSearchQuery}
+                      onChange={e => setResultsSearchQuery(e.target.value)}
+                      placeholder="Search Name or Roll No..."
+                      className="w-full bg-surface border-[2px] border-on-surface px-3 py-2 font-body-md text-xs shadow-[2px_2px_0px_0px_#1c1b1b] rounded-lg focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-body-md border-collapse">
+                    <thead>
+                      <tr className="bg-surface-container font-label-badge text-xs text-on-surface-variant uppercase tracking-wider border-b-2 border-on-surface">
+                        <th className="py-3 px-3 text-center w-12">RANK</th>
+                        <th className="py-3 px-3">PLAYER ID</th>
+                        <th className="py-3 px-3">NAME</th>
+                        <th className="py-3 px-3">BRANCH</th>
+                        <th className="py-3 px-3 text-center">QUIZ (/20)</th>
+                        <th className="py-3 px-3 text-center">PUZZLE (/20)</th>
+                        <th className="py-3 px-3 text-center font-bold text-on-surface">TOTAL (/40)</th>
+                        <th className="py-3 px-3 text-center">PERCENTAGE</th>
+                        <th className="py-3 px-3 text-center">STATUS</th>
+                        <th className="py-3 px-3 text-right">ACTIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-surface-container font-label-code text-xs text-on-surface">
+                      {filteredScoreRecords.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="py-8 text-center text-on-surface-variant font-label-code">
+                            NO RESULTS MATCHING CURRENT CRITERIA
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredScoreRecords.map((r) => (
+                          <tr key={r.playerId} className="hover:bg-surface-container-low transition-colors">
+                            <td className="py-3 px-3 text-center font-bold font-headline-md">
+                              #{r.rank}
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className="bg-primary-container text-on-surface border border-on-surface px-2 py-0.5 rounded font-bold shadow-[1px_1px_0px_0px_#1c1b1b]">
+                                {r.playerId}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 font-headline-md text-sm font-bold uppercase">
+                              {r.fullName}
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className="text-[11px] text-on-surface-variant font-semibold">
+                                {r.department}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-center font-bold text-secondary text-sm">
+                              {r.quizScore.toFixed(1)}
+                            </td>
+                            <td className="py-3 px-3 text-center font-bold text-on-surface text-sm">
+                              {r.puzzleScore !== undefined ? r.puzzleScore.toFixed(1) : '0.0'}
+                            </td>
+                            <td className="py-3 px-3 text-center font-headline-md text-base font-black text-on-surface">
+                              {r.totalScore.toFixed(1)}
+                            </td>
+                            <td className="py-3 px-3 text-center font-bold">
+                              {r.percentage.toFixed(1)}%
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-on-surface ${
+                                r.status === 'DISTINCTION' ? 'bg-secondary text-on-secondary' :
+                                r.status === 'PASS' ? 'bg-primary-container text-on-surface' :
+                                'bg-error text-on-error'
+                              }`}>
+                                {r.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => exportSingleStudentPDF(r)}
+                                  title="Download Individual PDF Marksheet"
+                                  className="p-1.5 bg-surface text-on-surface border border-on-surface rounded shadow-[1px_1px_0px_0px_#1c1b1b] hover:bg-surface-container"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const matchPart = participants.find(p => p.player_id === r.playerId);
+                                    if (matchPart) setSelectedParticipantId(matchPart.id);
+                                  }}
+                                  title="View Full Profile"
+                                  className="p-1.5 bg-primary-container text-on-surface border border-on-surface rounded shadow-[1px_1px_0px_0px_#1c1b1b] hover:bg-primary-container/80"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">visibility</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
               </div>
             </div>
           )}

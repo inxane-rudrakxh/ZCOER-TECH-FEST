@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAntiCheat } from "../hooks/useAntiCheat";
+import { exportSingleStudentPDF, exportResultsCSV } from "../utils/exportUtils";
 
 const PlayerQuiz = () => {
   const { playerToken } = useParams<{ playerToken: string }>();
@@ -17,6 +18,7 @@ const PlayerQuiz = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
   const [cheated, setCheated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,6 +60,7 @@ const PlayerQuiz = () => {
         const { data: attemptData } = await supabase.from("quiz_attempts").select("*").eq("quiz_id", quizData.id).eq("participant_id", pData.id).single();
         if (attemptData && attemptData.status === 'COMPLETED') {
           setSubmitted(true);
+          setFinalScore(attemptData.score);
         }
 
       } catch (err: any) {
@@ -151,6 +154,7 @@ const { overlay: antiCheatOverlay } = useAntiCheat({
         time_taken_seconds: 0
       }, { onConflict: 'participant_id, game_id' });
 
+      setFinalScore(calculatedScore);
       setSubmitted(true);
     } catch (err) {
       console.error(err);
@@ -179,19 +183,56 @@ const { overlay: antiCheatOverlay } = useAntiCheat({
   }
 
   if (submitted) {
+    const studentRecord = {
+      playerId: participant?.player_id || "ZCOER-000",
+      fullName: participant?.full_name || "Student",
+      department: participant?.department || "S.Y. B.Tech (AI & DS)",
+      quizScore: finalScore !== null ? finalScore : 0,
+      maxQuizScore: 20,
+      totalScore: finalScore !== null ? finalScore : 0,
+      maxTotalScore: 20,
+      percentage: ((finalScore || 0) / 20) * 100,
+      status: ((finalScore || 0) >= 15 ? 'DISTINCTION' : (finalScore || 0) >= 8 ? 'PASS' : 'NEEDS_IMPROVEMENT') as any,
+      submittedAt: new Date().toISOString()
+    };
+
     return (
       <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6">
-        <div className="bg-surface-container-lowest border-[4px] border-secondary p-10 text-center shadow-[8px_8px_0px_0px_#1c1b1b] rounded-2xl max-w-lg w-full">
-          <span className="material-symbols-outlined text-secondary text-6xl mb-4">task_alt</span>
+        <div className="bg-surface-container-lowest border-[4px] border-secondary p-8 sm:p-10 text-center shadow-[8px_8px_0px_0px_#1c1b1b] rounded-2xl max-w-lg w-full">
+          <span className="material-symbols-outlined text-secondary text-6xl mb-3">task_alt</span>
           <h1 className="font-headline-xl text-on-surface uppercase mb-2">QUIZ COMPLETED</h1>
+          
           <div className="bg-primary-container p-6 rounded-xl border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] text-center mb-6">
             <span className="material-symbols-outlined text-4xl text-on-surface mb-2">verified</span>
-            <h2 className="font-headline-lg text-2xl uppercase text-on-surface mb-2">Quiz Submitted Successfully</h2>
+            <h2 className="font-headline-lg text-2xl uppercase text-on-surface mb-1">Quiz Submitted Successfully</h2>
+            {finalScore !== null && (
+              <div className="font-headline-xl text-3xl font-black text-secondary my-2">
+                {finalScore} / 20 MARKS
+              </div>
+            )}
             <div className="font-body-md text-on-surface-variant">
               Awaiting Leaderboard Reveal. Keep an eye on the main arena!
             </div>
           </div>
-          <button onClick={() => navigate(`/player/${playerToken}`)} className="bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase">
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+            <button
+              onClick={() => exportSingleStudentPDF(studentRecord)}
+              className="flex items-center justify-center gap-2 bg-secondary text-on-secondary font-headline-md px-4 py-2.5 rounded-xl border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 text-xs uppercase transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              Download PDF Marksheet
+            </button>
+            <button
+              onClick={() => exportResultsCSV([studentRecord], `OOPS_Quiz_${studentRecord.playerId}.csv`)}
+              className="flex items-center justify-center gap-2 bg-surface text-on-surface font-headline-md px-4 py-2.5 rounded-xl border-[2px] border-on-surface shadow-[2px_2px_0px_0px_#1c1b1b] hover:-translate-y-0.5 text-xs uppercase transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">table_chart</span>
+              Export CSV
+            </button>
+          </div>
+
+          <button onClick={() => navigate(`/player/${playerToken}`)} className="w-full bg-primary-container text-on-surface font-headline-md px-6 py-3 border-[2px] border-on-surface shadow-[4px_4px_0px_0px_#1c1b1b] hover:-translate-y-1 transition-all uppercase rounded-xl">
             RETURN TO DASHBOARD
           </button>
         </div>

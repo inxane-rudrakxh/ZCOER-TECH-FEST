@@ -19,6 +19,11 @@ import PlayerDebug from './pages/PlayerDebug';
 import PlayerAi from './pages/PlayerAi';
 import StudentLogin from './pages/StudentLogin';
 
+// OOPS in C++ Assessment Suite
+import OopsHub from './pages/OopsHub';
+import OopsQuiz from './pages/OopsQuiz';
+import OopsPuzzle from './pages/OopsPuzzle';
+
 // Layout Wrappers
 import MobileOnly from './components/MobileOnly';
 import DesktopOnly from './components/DesktopOnly';
@@ -36,6 +41,13 @@ function App() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/rules" element={<Rules />} />
         <Route path="/about" element={<About />} />
+
+        {/* OOPS in C++ Assessment, Quiz, Puzzle & Marks Routes */}
+        <Route path="/oops" element={<OopsHub />} />
+        <Route path="/oops/quiz" element={<OopsQuiz />} />
+        <Route path="/oops/puzzle" element={<OopsPuzzle />} />
+        <Route path="/quiz" element={<OopsQuiz />} />
+        <Route path="/puzzle" element={<OopsPuzzle />} />
 
         {/* Dedicated Registration Route (Mobile Only) */}
         <Route path="/register/:registrationToken" element={

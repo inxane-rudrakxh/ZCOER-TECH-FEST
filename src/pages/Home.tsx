@@ -127,6 +127,15 @@ const Home = () => {
                     </span>
                     <span>VIEW LEADERBOARD</span>
                   </Link>
+                  <Link
+                    className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-primary-container text-on-surface font-headline-md text-[16px] uppercase tracking-wider rounded-xl shadow-md hover:-translate-y-0.5 active:translate-y-0.5 transition-all border-[3px] border-on-surface"
+                    to="/oops"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      school
+                    </span>
+                    <span>OOPS IN C++ ARENA</span>
+                  </Link>
                 </div>
                 {/* Metric micro-strip */}
                 <div className="flex flex-wrap items-center gap-6 pt-3 font-label-code text-label-code text-on-surface-variant">

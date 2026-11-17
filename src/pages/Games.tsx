@@ -63,6 +63,40 @@ const Games = () => {
             </p>
           </div>
 
+          {/* OOPS in C++ Spotlight Banner */}
+          <div className="bg-primary-container p-6 rounded-2xl border-[3px] border-on-surface shadow-[6px_6px_0px_0px_#1c1b1b] mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="bg-secondary text-on-secondary px-2.5 py-0.5 rounded font-label-badge text-xs uppercase font-bold">
+                  NEW ASSESSMENT
+                </span>
+                <span className="font-label-code text-xs font-bold text-on-surface uppercase">
+                  S.Y. B.Tech (AI &amp; DS)
+                </span>
+              </div>
+              <h2 className="font-headline-xl text-2xl md:text-3xl uppercase text-on-surface">
+                OOPS IN C++: QUIZ &amp; PUZZLE ARENA
+              </h2>
+              <p className="font-body-sm text-on-surface-variant max-w-xl">
+                20 MCQs on C++ Inheritance &amp; Polymorphism + 4-Stage Architectural Logic Puzzle. Includes instant Marksheet and Result export in PDF and CSV formats.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to="/oops/quiz"
+                className="bg-secondary text-on-secondary px-5 py-3 rounded-xl font-headline-md uppercase text-sm border-[2px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] hover:-translate-y-0.5 transition-all"
+              >
+                Take Quiz
+              </Link>
+              <Link
+                to="/oops/puzzle"
+                className="bg-surface text-on-surface px-5 py-3 rounded-xl font-headline-md uppercase text-sm border-[2px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] hover:-translate-y-0.5 transition-all"
+              >
+                Solve Puzzle
+              </Link>
+            </div>
+          </div>
+
           {loading ? (
             <div className="w-full h-64 flex items-center justify-center font-label-code text-on-surface-variant">
               LOADING ARENAS...

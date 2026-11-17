@@ -50,6 +50,7 @@ const Header = () => {
             data-active-classes="bg-primary-container text-on-surface font-bold border-[3px] border-on-surface shadow-[3px_3px_0px_0px_#1c1b1b] rounded-xl"
           >
             <Link className={getLinkClass("/")} to="/">Home</Link>
+            <Link className={getLinkClass("/oops")} to="/oops">OOPS in C++</Link>
             <Link className={getLinkClass("/games")} to="/games">Arena Stage Flow</Link>
             <Link className={getLinkClass("/leaderboard")} to="/leaderboard">Live Leaderboard</Link>
             <Link className={getLinkClass("/rules")} to="/rules">Rules</Link>
