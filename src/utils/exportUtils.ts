@@ -8,6 +8,9 @@ export interface StudentScoreRecord {
   department: string;
   academicYear?: string;
   campaignName?: string;
+  cgScore?: number;
+  inheritanceScore?: number;
+  polymorphismScore?: number;
   quizScore: number;
   maxQuizScore: number;
   puzzleScore?: number;
@@ -301,7 +304,10 @@ export const exportResultsCSV = (
     "Department",
     "Academic Year",
     "Campaign",
-    "Quiz Marks (/20)",
+    "CG Quiz Marks (/10)",
+    "C++ Inheritance Marks (/10)",
+    "C++ Polymorphism Marks (/10)",
+    "Quiz Total",
     "Puzzle Marks (/20)",
     "Total Marks",
     "Max Marks",
@@ -325,6 +331,9 @@ export const exportResultsCSV = (
     r.department || "AI & DS",
     r.academicYear || "S.Y. B.Tech",
     r.campaignName || "General",
+    r.cgScore !== undefined ? r.cgScore : "N/A",
+    r.inheritanceScore !== undefined ? r.inheritanceScore : "N/A",
+    r.polymorphismScore !== undefined ? r.polymorphismScore : "N/A",
     r.quizScore,
     r.puzzleScore !== undefined ? r.puzzleScore : 0,
     r.totalScore,

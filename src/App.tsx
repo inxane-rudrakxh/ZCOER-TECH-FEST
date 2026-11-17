@@ -73,6 +73,16 @@ function App() {
             <PlayerQuiz />
           </MobileOnly>
         } />
+        <Route path="/player/:playerToken/cpp-inheritance" element={
+          <MobileOnly>
+            <PlayerQuiz />
+          </MobileOnly>
+        } />
+        <Route path="/player/:playerToken/cpp-polymorphism" element={
+          <MobileOnly>
+            <PlayerQuiz />
+          </MobileOnly>
+        } />
         <Route path="/player/:playerToken/debug" element={
           <MobileOnly>
             <PlayerDebug />

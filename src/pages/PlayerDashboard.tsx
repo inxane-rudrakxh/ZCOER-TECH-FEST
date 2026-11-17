@@ -97,10 +97,12 @@ const PlayerDashboard = () => {
   }, [playerToken]);
 
   const getGameNumberText = (slug: string) => {
-    if (slug === 'quiz') return '01 THINK';
+    if (slug === 'quiz') return 'CG QUIZ';
+    if (slug === 'cpp-inheritance') return 'C++ INHERITANCE';
+    if (slug === 'cpp-polymorphism') return 'C++ POLYMORPHISM';
     if (slug === 'debug') return '02 DEBUG';
     if (slug === 'ai') return '03 CREATE';
-    return 'ROUND';
+    return 'CHALLENGE';
   };
 
   const getStatusDisplay = (status: string) => {

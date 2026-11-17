@@ -137,18 +137,25 @@ const Admin = () => {
   // Computed marks ledger for all students
   const computedScoreRecords: StudentScoreRecord[] = participants.map((p) => {
     const pScores = scores.filter(s => s.participant_id === p.id);
-    const quizGame = games.find(g => g.slug === 'quiz');
+    const cgGame = games.find(g => g.slug === 'quiz');
+    const inhGame = games.find(g => g.slug === 'cpp-inheritance');
+    const polyGame = games.find(g => g.slug === 'cpp-polymorphism');
     const debugGame = games.find(g => g.slug === 'debug');
 
-    const quizEntry = pScores.find(s => s.games?.slug === 'quiz' || (quizGame && s.game_id === quizGame.id));
+    const cgEntry = pScores.find(s => s.games?.slug === 'quiz' || (cgGame && s.game_id === cgGame.id));
+    const inhEntry = pScores.find(s => s.games?.slug === 'cpp-inheritance' || (inhGame && s.game_id === inhGame.id));
+    const polyEntry = pScores.find(s => s.games?.slug === 'cpp-polymorphism' || (polyGame && s.game_id === polyGame.id));
     const puzzleEntry = pScores.find(s => s.games?.slug === 'debug' || (debugGame && s.game_id === debugGame.id));
 
-    const quizScore = quizEntry ? Number(quizEntry.score) : 0;
+    const cgScore = cgEntry ? Number(cgEntry.score) : 0;
+    const inheritanceScore = inhEntry ? Number(inhEntry.score) : 0;
+    const polymorphismScore = polyEntry ? Number(polyEntry.score) : 0;
+    const quizScore = cgScore + inheritanceScore + polymorphismScore;
     const puzzleScore = puzzleEntry ? Number(puzzleEntry.score) : 0;
     const totalScore = quizScore + puzzleScore;
-    const maxTotalScore = 40; // 20 Quiz + 20 Puzzle
-    const percentage = (totalScore / maxTotalScore) * 100;
-    const timeTaken = (quizEntry?.time_taken_seconds || 0) + (puzzleEntry?.time_taken_seconds || 0);
+    const maxTotalScore = 50; // 10 CG + 10 Inh + 10 Poly + 20 Puzzle
+    const percentage = maxTotalScore > 0 ? (totalScore / maxTotalScore) * 100 : 0;
+    const timeTaken = (cgEntry?.time_taken_seconds || 0) + (inhEntry?.time_taken_seconds || 0) + (polyEntry?.time_taken_seconds || 0) + (puzzleEntry?.time_taken_seconds || 0);
 
     return {
       playerId: p.player_id,
@@ -156,14 +163,17 @@ const Admin = () => {
       department: p.department || 'AI & DS',
       academicYear: p.academic_year || 'S.Y. B.Tech',
       campaignName: p.registration_campaigns?.name || 'General',
+      cgScore,
+      inheritanceScore,
+      polymorphismScore,
       quizScore,
-      maxQuizScore: 20,
+      maxQuizScore: 30,
       puzzleScore,
       maxPuzzleScore: 20,
       totalScore,
       maxTotalScore,
       percentage,
-      status: (percentage >= 75 ? 'DISTINCTION' : percentage >= 40 ? 'PASS' : 'NEEDS_IMPROVEMENT') as 'PASS' | 'DISTINCTION' | 'NEEDS_IMPROVEMENT',
+      status: (percentage >= 70 ? 'DISTINCTION' : percentage >= 40 ? 'PASS' : 'NEEDS_IMPROVEMENT') as 'PASS' | 'DISTINCTION' | 'NEEDS_IMPROVEMENT',
       timeTakenSeconds: timeTaken,
       submittedAt: p.created_at
     };
@@ -854,9 +864,10 @@ const Admin = () => {
                         <th className="py-3 px-3">PLAYER ID</th>
                         <th className="py-3 px-3">NAME</th>
                         <th className="py-3 px-3">BRANCH</th>
-                        <th className="py-3 px-3 text-center">QUIZ (/20)</th>
-                        <th className="py-3 px-3 text-center">PUZZLE (/20)</th>
-                        <th className="py-3 px-3 text-center font-bold text-on-surface">TOTAL (/40)</th>
+                        <th className="py-3 px-3 text-center">CG (/10)</th>
+                        <th className="py-3 px-3 text-center">INHERITANCE (/10)</th>
+                        <th className="py-3 px-3 text-center">POLYMORPHISM (/10)</th>
+                        <th className="py-3 px-3 text-center font-bold text-on-surface">TOTAL</th>
                         <th className="py-3 px-3 text-center">PERCENTAGE</th>
                         <th className="py-3 px-3 text-center">STATUS</th>
                         <th className="py-3 px-3 text-right">ACTIONS</th>
@@ -865,7 +876,7 @@ const Admin = () => {
                     <tbody className="divide-y divide-surface-container font-label-code text-xs text-on-surface">
                       {filteredScoreRecords.length === 0 ? (
                         <tr>
-                          <td colSpan={10} className="py-8 text-center text-on-surface-variant font-label-code">
+                          <td colSpan={11} className="py-8 text-center text-on-surface-variant font-label-code">
                             NO RESULTS MATCHING CURRENT CRITERIA
                           </td>
                         </tr>
@@ -889,10 +900,13 @@ const Admin = () => {
                               </span>
                             </td>
                             <td className="py-3 px-3 text-center font-bold text-secondary text-sm">
-                              {r.quizScore.toFixed(1)}
+                              {r.cgScore !== undefined ? r.cgScore.toFixed(1) : '-'}
                             </td>
-                            <td className="py-3 px-3 text-center font-bold text-on-surface text-sm">
-                              {r.puzzleScore !== undefined ? r.puzzleScore.toFixed(1) : '0.0'}
+                            <td className="py-3 px-3 text-center font-bold text-secondary text-sm">
+                              {r.inheritanceScore !== undefined ? r.inheritanceScore.toFixed(1) : '-'}
+                            </td>
+                            <td className="py-3 px-3 text-center font-bold text-secondary text-sm">
+                              {r.polymorphismScore !== undefined ? r.polymorphismScore.toFixed(1) : '-'}
                             </td>
                             <td className="py-3 px-3 text-center font-headline-md text-base font-black text-on-surface">
                               {r.totalScore.toFixed(1)}

@@ -1,15 +1,24 @@
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAntiCheat } from "../hooks/useAntiCheat";
 import { exportSingleStudentPDF, exportResultsCSV } from "../utils/exportUtils";
 
 const PlayerQuiz = () => {
   const { playerToken } = useParams<{ playerToken: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
 
+  // Identify active quiz game slug from URL
+  const targetSlug = location.pathname.includes('cpp-inheritance')
+    ? 'cpp-inheritance'
+    : location.pathname.includes('cpp-polymorphism')
+    ? 'cpp-polymorphism'
+    : 'quiz';
+
   const [participant, setParticipant] = useState<any>(null);
+  const [game, setGame] = useState<any>(null);
   const [quiz, setQuiz] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -38,9 +47,10 @@ const PlayerQuiz = () => {
         if (!pData.is_verified) throw new Error("Participant not verified.");
         setParticipant(pData);
 
-        // Fetch quiz game ID
-        const { data: gameData } = await supabase.from("games").select("id, status").eq("slug", "quiz").single();
-        if (!gameData || gameData.status !== 'LIVE') throw new Error("Quiz is not currently LIVE.");
+        // Fetch quiz game ID for the targeted slug
+        const { data: gameData } = await supabase.from("games").select("id, name, status").eq("slug", targetSlug).single();
+        if (!gameData || gameData.status !== 'LIVE') throw new Error(`${gameData?.name || 'Quiz'} is not currently LIVE.`);
+        setGame(gameData);
 
         // Fetch active quiz
         const { data: quizData } = await supabase.from("quizzes").select("*").eq("game_id", gameData.id).eq("status", "LIVE").single();
@@ -71,7 +81,7 @@ const PlayerQuiz = () => {
     };
 
     fetchQuizData();
-  }, [playerToken]);
+  }, [playerToken, targetSlug]);
 
 const { overlay: antiCheatOverlay } = useAntiCheat({
     isActive: !submitted && !loading && !error && !!quiz && !!participant,
@@ -249,7 +259,7 @@ const { overlay: antiCheatOverlay } = useAntiCheat({
         <section className="w-full bg-surface-container border-b-[3px] border-on-surface py-3 px-4">
           <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="font-headline-md text-[18px] uppercase tracking-wider text-on-surface">ROUND 01: QUIZ</span>
+              <span className="font-headline-md text-[18px] uppercase tracking-wider text-on-surface">{game?.name || 'TECHNICAL QUIZ'}</span>
               <span className="bg-error text-on-error px-2 py-0.5 font-bold uppercase text-xs rounded animate-pulse">LIVE</span>
             </div>
           </div>
